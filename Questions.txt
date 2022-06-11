@@ -1,0 +1,2 @@
+Chart report
+- events dont have label i.e abbr
