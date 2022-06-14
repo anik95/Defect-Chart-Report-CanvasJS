@@ -137,7 +137,7 @@ async (dataString) => {
       columnName: "Cant",
     },
     {
-      id: "GaugeDeviation",
+      id: "GaugeDefect",
       shortName: "Gauge",
       shouldShow: true,
       limitName: "Gauge",
@@ -519,7 +519,7 @@ async (dataString) => {
       TwistBase1: [],
       CantDefect: [],
       Cant: [],
-      GaugeDeviation: [],
+      GaugeDefect: [],
       Localizations: [],
     };
   }
