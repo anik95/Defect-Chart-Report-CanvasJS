@@ -4,8 +4,8 @@ async (dataString) => {
   const {
     VisualTrackDatas,
     Events: events,
-    StationingStart,
-    StationingEnd,
+    MeasuredStationingStart: StationingStart,
+    MeasuredStationingEnd: StationingEnd,
     PageWidth,
     PageHeight,
     DefectScale,
@@ -13,8 +13,10 @@ async (dataString) => {
     DisplayEvents,
     SeverityLimits: chartThresholds,
     TwistBaseLength,
+    LocalizationScale,
+    StationingLabels,
   } = parsedData;
-
+  const widthRatio = LocalizationScale / 100;
   const chartTypes = [
     {
       id: "VersineVerticalRight",
@@ -382,14 +384,14 @@ async (dataString) => {
     const eventStripLines = [];
     events?.forEach((event) => {
       eventStripLines.push({
-        value: event.StationingStart,
+        value: event.MeasuredStationingStart,
         labelPlacement: "outside",
         lineDashType: "longDash",
         labelBackgroundColor: "#fff",
         color: "#000",
         label:
           chartListLength === 7
-            ? `${event.StationingStart}, ${event.Abbr.toUpperCase()}${
+            ? `${event.MappedStationingStart}, ${event.Abbr.toUpperCase()}${
                 event.IsRange ? "\u25BC" : ""
               }`
             : "",
@@ -404,14 +406,14 @@ async (dataString) => {
       });
       if (event.IsRange) {
         eventStripLines.push({
-          value: event.StationingEnd,
+          value: event.MeasuredStationingEnd,
           labelPlacement: "outside",
           lineDashType: "longDash",
           color: "#000",
           labelBackgroundColor: "#fff",
           label:
             chartListLength === 7
-              ? `${event.StationingEnd.toString()}, ${event.Abbr.toLowerCase()}\u25B2`
+              ? `${event.MappedStationingEnd.toString()}, ${event.Abbr.toLowerCase()}\u25B2`
               : "",
           showOnTop: true,
           labelFontColor: "#000",
@@ -474,7 +476,7 @@ async (dataString) => {
     limits?.[0]?.LimitsBySeverity.forEach((limit) => {
       labels = [...labels, limit.Upper, limit.Lower];
     });
-    return labels;
+    return [...labels, 0];
   };
 
   const newChartData = {};
@@ -535,10 +537,10 @@ async (dataString) => {
       const param = chartTypes.find((paramItem) => paramItem.id === key);
       if (param && param.shouldShow) {
         const limits = configureThresholdLimits(param);
-        const yAxisLabels = generateYAxisLabels(limits);
+        const yAxisLabels =
+          param.id === "Localizations" ? [] : generateYAxisLabels(limits);
         const [lineChartDataPoints, areaChartData, minY, maxY] =
           dataPointGenerator(value, limits);
-
         let thresholdDataSet = [];
         thresholdDataSet = generateThresholdStriplines(limits);
         const eventStripLines = DisplayEvents
@@ -560,8 +562,8 @@ async (dataString) => {
               ? "rgb(220, 220, 220, 0.5)"
               : "transparent",
           axisX2: {
-            minimum: StationingStart,
-            maximum: StationingEnd + 1,
+            minimum: StationingStart - 1 * widthRatio,
+            maximum: StationingEnd + 1 * widthRatio,
             lineThickness: 0,
             gridThickness: 0,
             tickLength: 0,
@@ -577,12 +579,7 @@ async (dataString) => {
               lineDashType: "solid",
               labelFormatter: () => "",
             },
-            interval:
-              Math.abs(StationingEnd - StationingStart) < 200
-                ? +Math.floor(
-                    Math.abs(StationingEnd - StationingStart) / 2
-                  ).toFixed()
-                : null,
+            interval: 5 * widthRatio,
             stripLines: [...eventStripLines, ...speedZoneStripLines],
           },
           axisY: {
@@ -600,7 +597,10 @@ async (dataString) => {
               labelAutoFit: true,
               labelPlacement: "outside",
               lineDashType: "solid",
-              color: "transparent",
+              color:
+                yAxisLabel === 0 && index === yAxisLabels.length - 1
+                  ? "#000"
+                  : "transparent",
               label: yAxisLabel.toString(),
               showOnTop: true,
               labelFontColor: "#000",
@@ -613,24 +613,23 @@ async (dataString) => {
             })),
           },
           axisX: {
-            minimum: StationingStart,
-            maximum: StationingEnd + 1,
+            minimum: StationingStart - 1 * widthRatio,
+            maximum: StationingEnd + 1 * widthRatio,
             tickLength: 2,
             labelAutoFit: true,
             labelWrap: false,
             labelFontWeight: "lighter",
             labelFontSize: 13,
-            interval:
-              Math.abs(StationingEnd - StationingStart) < 200
-                ? +Math.floor(
-                    Math.abs(StationingEnd - StationingStart) / 2
-                  ).toFixed()
-                : null,
+            interval: 5 * widthRatio,
             labelFormatter:
               chartList.length === 7
-                ? function (e) {
-                    return e.value;
-                  }
+                ? (e) =>
+                    Number(e.value) > StationingEnd &&
+                    Number(e.value) < StationingStart
+                      ? ""
+                      : StationingLabels.find(
+                          (label) => label.MeasuredStationingPoint === e.value
+                        )?.MappedStationingPoint || ''
                 : () => "",
             labelAngle: 270,
             stripLines: [...eventStripLines, ...speedZoneStripLines],
