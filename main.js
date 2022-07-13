@@ -17,6 +17,14 @@ async (dataString) => {
     StationingLabels,
   } = parsedData;
   const widthRatio = LocalizationScale / 100;
+  const chartContainerWrapper = document.createElement("div");
+  chartContainerWrapper.classList.add("chartContainerWrapper");
+  const chartContainer = document.createElement("div");
+  const chartContainerClass = "chartContainer" + StationingStart.toFixed(0);
+  chartContainer.classList.add("chartContainer");
+  chartContainer.classList.add(chartContainerClass);
+  chartContainerWrapper.append(chartContainer);
+  document.getElementById("defectChartReport").append(chartContainerWrapper);
   const chartTypes = [
     {
       id: "VersineVerticalRight",
@@ -454,20 +462,39 @@ async (dataString) => {
     }));
   };
 
+  const generateChartELement = (index, columnName) => {
+    const row = document.createElement("div");
+    row.classList.add("row");
+    document.querySelector(`.${chartContainerClass}`).append(row);
+    const chartColumnName = document.createElement("div");
+    chartColumnName.classList.add("chartColumnName");
+    const paragraph = document.createElement("p");
+    chartColumnName.append(paragraph);
+    row.append(chartColumnName);
+    const chart = document.createElement("div");
+    chart.classList.add("chart");
+    chart.classList.add(`chart-${index + 1}`);
+    chart.setAttribute("id", `chart-${index + 1}${StationingStart.toFixed(0)}`);
+    row.append(chart);
+  };
+
   const addLabels = (index, columnName) => {
     if (index === 7) {
+      document.querySelector(
+        `.${chartContainerClass} .row:nth-of-type(${index + 1}) p`
+      ).innerHTML = `Localization Information [m]`;
       return;
     }
     if (columnName === "Cant Defect") {
       document.querySelector(
-        `.row:nth-of-type(${index + 1}) p`
+        `.${chartContainerClass} .row:nth-of-type(${index + 1}) p`
       ).innerHTML = `Cant Defect 1:${DefectScale.toFixed(
         0
       )} [mm] <br> Cant 1:${SignalScale.toFixed(0)} [mm]`;
       return;
     }
     document.querySelector(
-      `.row:nth-of-type(${index + 1}) p`
+      `.${chartContainerClass} .row:nth-of-type(${index + 1}) p`
     ).innerHTML = `${columnName} <br> 1:${DefectScale.toFixed(0)} [mm]`;
   };
 
@@ -629,7 +656,7 @@ async (dataString) => {
                       ? ""
                       : StationingLabels.find(
                           (label) => label.MeasuredStationingPoint === e.value
-                        )?.MappedStationingPoint || ''
+                        )?.MappedStationingPoint || ""
                 : () => "",
             labelAngle: 270,
             stripLines: [...eventStripLines, ...speedZoneStripLines],
@@ -679,15 +706,16 @@ async (dataString) => {
             enabled: false,
           },
         };
+        generateChartELement(index, param.columnName);
         addLabels(index, param.columnName);
-        document.querySelector(`#chart-${index + 1}`).style.width = `${
-          PageWidth * 2
-        }px`;
         document.querySelector(
-          `#chart-${index + 1}`
+          `.${chartContainerClass} .chart-${index + 1}`
+        ).style.width = `${PageWidth * 2}px`;
+        document.querySelector(
+          `.${chartContainerClass} .chart-${index + 1}`
         ).style.height = `${height}px`;
         const stockChart = new CanvasJS.StockChart(
-          `chart-${index + 1}`,
+          `chart-${index + 1}${StationingStart.toFixed(0)}`,
           options
         );
         stockChart.render();
@@ -701,10 +729,10 @@ async (dataString) => {
       }
     }
 
-    document.querySelector("#canvasjsChart").style.width = `${
-      (PageWidth + 21) * 2
-    }px`;
-    var canvas = await html2canvas(document.querySelector("#canvasjsChart"));
-    return canvas.toDataURL();
+    document.querySelector(
+      `.${chartContainerClass}`
+    ).parentNode.style.width = `${(PageWidth + 21) * 2}px`;
+    // var canvas = await html2canvas(document.querySelector("#defectChartReport"));
+    // return canvas.toDataURL();
   }
 };
