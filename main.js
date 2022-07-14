@@ -409,7 +409,7 @@ async (dataString) => {
         labelWrap: true,
         labelAlign: "near",
         labelAngle: 270,
-        labelFontSize: 14,
+        labelFontSize: 11,
         labelMaxWidth: 130,
       });
       if (event.IsRange) {
@@ -429,7 +429,7 @@ async (dataString) => {
           labelWrap: true,
           labelAlign: "near",
           labelAngle: 270,
-          labelFontSize: 14,
+          labelFontSize: 11,
           labelMaxWidth: 130,
         });
       }
@@ -456,7 +456,7 @@ async (dataString) => {
       labelWrap: false,
       labelAlign: "near",
       labelAngle: 270,
-      labelFontSize: 14,
+      labelFontSize: 11,
       labelMaxWidth: 130,
       labelWrap: true,
     }));
@@ -618,7 +618,7 @@ async (dataString) => {
             minimum: minY - 1,
             labelFormatter: () => "",
             labelAutoFit: true,
-            labelFontSize: 14,
+            labelFontSize: 11,
             stripLines: yAxisLabels.map((yAxisLabel, index) => ({
               value: yAxisLabel,
               labelAutoFit: true,
@@ -635,7 +635,7 @@ async (dataString) => {
               labelWrap: false,
               labelAlign: "near",
               labelBackgroundColor: "transparent",
-              labelFontSize: 14,
+              labelFontSize: 11,
               labelMaxWidth: 30,
             })),
           },
@@ -646,7 +646,7 @@ async (dataString) => {
             labelAutoFit: true,
             labelWrap: false,
             labelFontWeight: "lighter",
-            labelFontSize: 13,
+            labelFontSize: 10,
             interval: 5 * widthRatio,
             labelFormatter:
               chartList.length === 7
