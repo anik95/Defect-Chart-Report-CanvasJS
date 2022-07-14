@@ -581,7 +581,7 @@ async (dataString) => {
         if (chartList.length === 7) {
           height = 133; //92 -> 133
         }
-        height = height * 2;
+        // height = height * 2;
         chartList.push({
           height: height,
           backgroundColor:
@@ -690,8 +690,7 @@ async (dataString) => {
           const prevMin = chartList[chartList.length - 1].axisY.minimum;
           const newMax = Math.max(prevMax, cantDataMax);
           const newMin = Math.min(prevMin, cantDataMin);
-          height =
-            ((Math.abs(newMax - newMin) / DefectScale) * 3.7795275591 + 8) * 2;
+          height = (Math.abs(newMax - newMin) / DefectScale) * 3.7795275591 + 8;
           chartList[chartList.length - 1].axisY.maximum = newMax;
           chartList[chartList.length - 1].axisY.minimum = newMin;
           chartList[chartList.length - 1].height = height;
@@ -710,7 +709,7 @@ async (dataString) => {
         addLabels(index, param.columnName);
         document.querySelector(
           `.${chartContainerClass} .chart-${index + 1}`
-        ).style.width = `${PageWidth * 2}px`;
+        ).style.width = `${PageWidth}px`;
         document.querySelector(
           `.${chartContainerClass} .chart-${index + 1}`
         ).style.height = `${height}px`;
@@ -731,7 +730,7 @@ async (dataString) => {
 
     document.querySelector(
       `.${chartContainerClass}`
-    ).parentNode.style.width = `${(PageWidth + 21) * 2}px`;
+    ).parentNode.style.width = `${PageWidth + 41}px`;
     // var canvas = await html2canvas(document.querySelector("#defectChartReport"));
     // return canvas.toDataURL();
   }

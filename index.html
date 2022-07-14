@@ -11,7 +11,7 @@
         justify-content: flex-start;
         align-items: center;
         /* transform: rotate(90deg); */
-        transform: rotate(90deg) translate(-61%, -27%);
+        transform: rotate(90deg) translate(-210%, -40.45%);
         border: 2px solid black;
       }
       .chartContainer {
@@ -19,20 +19,21 @@
         align-items: flex-start;
         justify-content: flex-start;
         flex-direction: column;
+        page-break-after: always;
       }
       .chart {
         overflow: hidden;
-        max-height: 266px; /*92px -> 133px*/
+        max-height: 133px; /*92px -> 133px*/
         box-sizing: border-box;
-        width: 200%;
+        width: 100%;
       }
       .row {
         display: flex;
         align-items: center;
         justify-content: flex-start;
         border-top: 1px solid #000;
-        min-height: 268px; /* 1px extra for boder  - 93px -> 134px*/
-        max-height: 268px; /*93px -> 134px*/
+        min-height: 134px; /* 1px extra for boder  - 93px -> 134px*/
+        max-height: 134px; /*93px -> 134px*/
         box-sizing: border-box;
         overflow: hidden;
         background-color: transparent;
@@ -56,7 +57,7 @@
         border-bottom: 0;
       }
       .chartColumnName {
-        height: 266px; /*92px -> 133px*/
+        height: 133px; /*92px -> 133px*/
         display: flex;
         align-items: center;
         justify-content: center;
@@ -65,8 +66,8 @@
         padding-right: 1px;
       }
       .chartColumnName p {
-        min-width: 266px; /*92px -> 133px*/
-        max-width: 266px; /*92px -> 133px*/
+        min-width: 133px; /*92px -> 133px*/
+        max-width: 133px; /*92px -> 133px*/
         font-size: 18px; /*9*/
         margin: 0;
         transform: rotate(270deg);
