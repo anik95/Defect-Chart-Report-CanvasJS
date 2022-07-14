@@ -709,7 +709,7 @@ async (dataString) => {
         addLabels(index, param.columnName);
         document.querySelector(
           `.${chartContainerClass} .chart-${index + 1}`
-        ).style.width = `${PageWidth - 2}px`;
+        ).style.width = `${PageWidth}px`;
         document.querySelector(
           `.${chartContainerClass} .chart-${index + 1}`
         ).style.height = `${height}px`;
@@ -728,9 +728,12 @@ async (dataString) => {
       }
     }
 
+    document.querySelector(`.${chartContainerClass}`).style.width = `${
+      PageWidth + 38
+    }px`;
     document.querySelector(
       `.${chartContainerClass}`
-    ).parentNode.style.width = `${PageWidth + 41}px`;
+    ).parentNode.style.maxHeight = `${PageWidth + 38 + 4}px`;
     // var canvas = await html2canvas(document.querySelector("#defectChartReport"));
     // return canvas.toDataURL();
   }

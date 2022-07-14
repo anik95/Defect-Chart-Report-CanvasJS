@@ -7,24 +7,26 @@
     <title>Document</title>
     <style>
       .chartContainerWrapper {
-        display: flex;
+        /* display: flex;
         justify-content: flex-start;
         align-items: center;
-        /* transform: rotate(90deg); */
         transform: rotate(90deg) translate(0, -100%);
         border: 2px solid black;
-        transform-origin: 0 0;
+        transform-origin: 0 0; */
+        page-break-after: always;
       }
       .chartContainer {
         display: flex;
         align-items: flex-start;
         justify-content: flex-start;
         flex-direction: column;
-        page-break-after: always;
+        transform: rotate(90deg) translate(0, -100%);
+        border: 2px solid black;
+        transform-origin: 0 0;
       }
       .chart {
         overflow: hidden;
-        max-height: 133px; /*92px -> 133px*/
+        max-height: 131px; /*92px -> 133px*/
         box-sizing: border-box;
         width: 100%;
       }
@@ -62,7 +64,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 40px; /*20px*/
+        width: 36px; /*20px*/
         border-right: 1px solid #000;
         padding-right: 1px;
       }
