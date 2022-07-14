@@ -349,7 +349,7 @@ async (dataString) => {
         axisXType: "secondary",
         markerSize: 0,
         lineDashType: "dash",
-        lineThickness: 1,
+        lineThickness: 0.7,
         dataPoints: [
           {
             x: start,
@@ -709,7 +709,7 @@ async (dataString) => {
         addLabels(index, param.columnName);
         document.querySelector(
           `.${chartContainerClass} .chart-${index + 1}`
-        ).style.width = `${PageWidth}px`;
+        ).style.width = `${PageWidth - 2}px`;
         document.querySelector(
           `.${chartContainerClass} .chart-${index + 1}`
         ).style.height = `${height}px`;
