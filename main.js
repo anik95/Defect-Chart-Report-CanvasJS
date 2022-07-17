@@ -208,7 +208,7 @@ async (dataString) => {
         axisXType: "secondary",
         dataPoints: [value],
         color,
-        lineColor: "black",
+        lineColor: "transparent",
       });
     } else {
       areaChartData[areaChartData.length - 1].dataPoints?.push(value);
@@ -349,7 +349,7 @@ async (dataString) => {
         axisXType: "secondary",
         markerSize: 0,
         lineDashType: "dash",
-        lineThickness: 0.7,
+        lineThickness: 0.8,
         dataPoints: [
           {
             x: start,
@@ -405,7 +405,7 @@ async (dataString) => {
             : "",
         showOnTop: true,
         labelFontColor: "#000",
-        labelFontFamily: "Roboto",
+        labelFontFamily: "Calibri",
         labelWrap: true,
         labelAlign: "near",
         labelAngle: 270,
@@ -425,7 +425,7 @@ async (dataString) => {
               : "",
           showOnTop: true,
           labelFontColor: "#000",
-          labelFontFamily: "Roboto",
+          labelFontFamily: "Calibri",
           labelWrap: true,
           labelAlign: "near",
           labelAngle: 270,
@@ -450,9 +450,9 @@ async (dataString) => {
             )} \u25BC`
           : "",
       showOnTop: true,
-      labelBackgroundColor: "#fff",
+      labelBackgroundColor: "transparent",
       labelFontColor: "#5a5a5a",
-      labelFontFamily: "Roboto",
+      labelFontFamily: "Calibri",
       labelWrap: false,
       labelAlign: "near",
       labelAngle: 270,
@@ -581,7 +581,6 @@ async (dataString) => {
         if (chartList.length === 7) {
           height = 133; //92 -> 133
         }
-        // height = height * 2;
         chartList.push({
           height: height,
           backgroundColor:
@@ -631,7 +630,7 @@ async (dataString) => {
               label: yAxisLabel.toString(),
               showOnTop: true,
               labelFontColor: "#000",
-              labelFontFamily: "Roboto",
+              labelFontFamily: "Calibri",
               labelWrap: false,
               labelAlign: "near",
               labelBackgroundColor: "transparent",
@@ -669,6 +668,7 @@ async (dataString) => {
               markerSize: 0,
               dataPoints: lineChartDataPoints,
               lineColor: "black",
+              lineThickness: 0.8
             },
             ...areaChartData,
             ...thresholdDataSet,
@@ -683,6 +683,7 @@ async (dataString) => {
             markerSize: 0,
             dataPoints: cantData[0],
             lineColor: "black",
+            lineThickness: 0.8
           });
           const cantDataMax = cantData[3] + 1;
           const cantDataMin = cantData[2] - 1;
@@ -690,7 +691,7 @@ async (dataString) => {
           const prevMin = chartList[chartList.length - 1].axisY.minimum;
           const newMax = Math.max(prevMax, cantDataMax);
           const newMin = Math.min(prevMin, cantDataMin);
-          height = (Math.abs(newMax - newMin) / DefectScale) * 3.7795275591 + 8;
+          height = (Math.abs(newMax - newMin) / DefectScale) * 3.78;
           chartList[chartList.length - 1].axisY.maximum = newMax;
           chartList[chartList.length - 1].axisY.minimum = newMin;
           chartList[chartList.length - 1].height = height;
@@ -734,7 +735,5 @@ async (dataString) => {
     document.querySelector(
       `.${chartContainerClass}`
     ).parentNode.style.maxHeight = `${PageWidth + 38 + 4}px`;
-    // var canvas = await html2canvas(document.querySelector("#defectChartReport"));
-    // return canvas.toDataURL();
   }
 };
