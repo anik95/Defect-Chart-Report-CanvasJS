@@ -112,7 +112,7 @@ async (dataString) => {
       shouldShow: false,
       limitName: "HorizontalAlignment",
       limitType: "D1Limits",
-      columnName: "Alignment Left",
+      columnName: "Alignment Right",
     },
     {
       id: "AlignmentD1Left",
@@ -120,7 +120,7 @@ async (dataString) => {
       shouldShow: false,
       limitName: "HorizontalAlignment",
       limitType: "D1Limits",
-      columnName: "Alignment Right",
+      columnName: "Alignment Left",
     },
     {
       id: "TwistBase1",
@@ -395,13 +395,13 @@ async (dataString) => {
         value: event.MeasuredStationingStart,
         labelPlacement: "outside",
         lineDashType: "longDash",
-        labelBackgroundColor: "#fff",
+        labelBackgroundColor: "transparent",
         color: "#000",
         label:
           chartListLength === 7
-            ? `${event.MappedStationingStart}, ${event.Abbr.toUpperCase()}${
-                event.IsRange ? "\u25BC" : ""
-              }`
+            ? `${event.MappedStationingStart.toFixed(
+                0
+              )}, ${event.Abbr.toUpperCase()}${event.IsRange ? "\u25BC" : ""}`
             : "",
         showOnTop: true,
         labelFontColor: "#000",
@@ -418,10 +418,12 @@ async (dataString) => {
           labelPlacement: "outside",
           lineDashType: "longDash",
           color: "#000",
-          labelBackgroundColor: "#fff",
+          labelBackgroundColor: "transparent",
           label:
             chartListLength === 7
-              ? `${event.MappedStationingEnd.toString()}, ${event.Abbr.toLowerCase()}\u25B2`
+              ? `${event.MappedStationingEnd.toFixed(
+                  0
+                )}, ${event.Abbr.toLowerCase()}\u25B2`
               : "",
           showOnTop: true,
           labelFontColor: "#000",
@@ -577,9 +579,12 @@ async (dataString) => {
           speedZones,
           chartList.length
         );
-        let height = (Math.abs(maxY - minY) / DefectScale) * 3.7795275591 + 8;
+        let height = (Math.abs(maxY - minY) / DefectScale) * 3.78 + 13;
+        if (height < 10) {
+          height = 10;
+        }
         if (chartList.length === 7) {
-          height = 133; //92 -> 133
+          height = 133;
         }
         chartList.push({
           height: height,
@@ -655,7 +660,7 @@ async (dataString) => {
                       ? ""
                       : StationingLabels.find(
                           (label) => label.MeasuredStationingPoint === e.value
-                        )?.MappedStationingPoint || ""
+                        )?.MappedStationingPoint.toFixed(0) || ""
                 : () => "",
             labelAngle: 270,
             stripLines: [...eventStripLines, ...speedZoneStripLines],
@@ -668,7 +673,7 @@ async (dataString) => {
               markerSize: 0,
               dataPoints: lineChartDataPoints,
               lineColor: "black",
-              lineThickness: 0.8
+              lineThickness: 0.8,
             },
             ...areaChartData,
             ...thresholdDataSet,
@@ -683,7 +688,7 @@ async (dataString) => {
             markerSize: 0,
             dataPoints: cantData[0],
             lineColor: "black",
-            lineThickness: 0.8
+            lineThickness: 0.8,
           });
           const cantDataMax = cantData[3] + 1;
           const cantDataMin = cantData[2] - 1;
