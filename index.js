@@ -107462,7 +107462,6 @@ const chartReport = (dataString) => {
           param.id === "Localizations" ? [] : generateYAxisLabels(limits);
         const [lineChartDataPoints, areaChartData, minY, maxY] =
           dataPointGenerator(value, limits);
-        console.log(param, " ", minY, " ", maxY);
         let thresholdDataSet = [];
         thresholdDataSet = generateThresholdStriplines(limits);
         const eventStripLines = DisplayEvents
@@ -107474,12 +107473,11 @@ const chartReport = (dataString) => {
         );
         let height = (Math.abs(maxY - minY) / DefectScale) * 3.78 + 13;
         if (height < 10) {
-          height = 10; //92 -> 133
+          height = 10;
         }
         if (chartList.length === 7) {
-          height = 133; //92 -> 133
+          height = 133;
         }
-        // height = height * 2;
         chartList.push({
           height: height,
           backgroundColor:
@@ -107590,9 +107588,7 @@ const chartReport = (dataString) => {
           const prevMin = chartList[chartList.length - 1].axisY.minimum;
           const newMax = Math.max(prevMax, cantDataMax);
           const newMin = Math.min(prevMin, cantDataMin);
-          console.log("cant Min: ", newMin, newMax);
-
-          height = (Math.abs(newMax - newMin) / DefectScale) * 3.78;
+          height = (Math.abs(newMax - newMin) / DefectScale) * 3.78 + 13;
           chartList[chartList.length - 1].axisY.maximum = newMax;
           chartList[chartList.length - 1].axisY.minimum = newMin;
           chartList[chartList.length - 1].height = height;
@@ -107611,7 +107607,7 @@ const chartReport = (dataString) => {
         addLabels(index, param.columnName);
         document.querySelector(
           `.${chartContainerClass} .chart-${index + 1}`
-        ).style.width = `${PageWidth}px`;
+        ).style.width = `${PageWidth - 1}px`;
         document.querySelector(
           `.${chartContainerClass} .chart-${index + 1}`
         ).style.height = `${height}px`;
@@ -107636,8 +107632,6 @@ const chartReport = (dataString) => {
     document.querySelector(
       `.${chartContainerClass}`
     ).parentNode.style.maxHeight = `${PageWidth + 38 + 4}px`;
-    // var canvas = await html2canvas(document.querySelector("#defectChartReport"));
-    // return canvas.toDataURL();
   }
 };
 
