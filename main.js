@@ -696,7 +696,7 @@ async (dataString) => {
           const prevMin = chartList[chartList.length - 1].axisY.minimum;
           const newMax = Math.max(prevMax, cantDataMax);
           const newMin = Math.min(prevMin, cantDataMin);
-          height = (Math.abs(newMax - newMin) / DefectScale) * 3.78;
+          height = (Math.abs(newMax - newMin) / DefectScale) * 3.78 + 13;
           chartList[chartList.length - 1].axisY.maximum = newMax;
           chartList[chartList.length - 1].axisY.minimum = newMin;
           chartList[chartList.length - 1].height = height;
@@ -715,7 +715,7 @@ async (dataString) => {
         addLabels(index, param.columnName);
         document.querySelector(
           `.${chartContainerClass} .chart-${index + 1}`
-        ).style.width = `${PageWidth}px`;
+        ).style.width = `${PageWidth - 1}px`;
         document.querySelector(
           `.${chartContainerClass} .chart-${index + 1}`
         ).style.height = `${height}px`;
