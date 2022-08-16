@@ -17,6 +17,14 @@ async (dataString) => {
     StationingLabels,
   } = parsedData;
   const widthRatio = LocalizationScale / 100;
+  const chartContainerWrapper = document.createElement("div");
+  chartContainerWrapper.classList.add("chartContainerWrapper");
+  const chartContainer = document.createElement("div");
+  const chartContainerClass = "chartContainer" + StationingStart.toFixed(0);
+  chartContainer.classList.add("chartContainer");
+  chartContainer.classList.add(chartContainerClass);
+  chartContainerWrapper.append(chartContainer);
+  document.getElementById("defectChartReport").append(chartContainerWrapper);
   const chartTypes = [
     {
       id: "VersineVerticalRight",
@@ -104,7 +112,7 @@ async (dataString) => {
       shouldShow: false,
       limitName: "HorizontalAlignment",
       limitType: "D1Limits",
-      columnName: "Alignment Left",
+      columnName: "Alignment Right",
     },
     {
       id: "AlignmentD1Left",
@@ -112,7 +120,7 @@ async (dataString) => {
       shouldShow: false,
       limitName: "HorizontalAlignment",
       limitType: "D1Limits",
-      columnName: "Alignment Right",
+      columnName: "Alignment Left",
     },
     {
       id: "TwistBase1",
@@ -200,7 +208,7 @@ async (dataString) => {
         axisXType: "secondary",
         dataPoints: [value],
         color,
-        lineColor: "black",
+        lineColor: "transparent",
       });
     } else {
       areaChartData[areaChartData.length - 1].dataPoints?.push(value);
@@ -341,7 +349,7 @@ async (dataString) => {
         axisXType: "secondary",
         markerSize: 0,
         lineDashType: "dash",
-        lineThickness: 1,
+        lineThickness: 0.8,
         dataPoints: [
           {
             x: start,
@@ -387,21 +395,21 @@ async (dataString) => {
         value: event.MeasuredStationingStart,
         labelPlacement: "outside",
         lineDashType: "longDash",
-        labelBackgroundColor: "#fff",
+        labelBackgroundColor: "transparent",
         color: "#000",
         label:
           chartListLength === 7
-            ? `${event.MappedStationingStart}, ${event.Abbr.toUpperCase()}${
-                event.IsRange ? "\u25BC" : ""
-              }`
+            ? `${event.MappedStationingStart.toFixed(
+                0
+              )}, ${event.Abbr.toUpperCase()}${event.IsRange ? "\u25BC" : ""}`
             : "",
         showOnTop: true,
         labelFontColor: "#000",
-        labelFontFamily: "Roboto",
+        labelFontFamily: "Calibri",
         labelWrap: true,
         labelAlign: "near",
         labelAngle: 270,
-        labelFontSize: 14,
+        labelFontSize: 11,
         labelMaxWidth: 130,
       });
       if (event.IsRange) {
@@ -410,18 +418,20 @@ async (dataString) => {
           labelPlacement: "outside",
           lineDashType: "longDash",
           color: "#000",
-          labelBackgroundColor: "#fff",
+          labelBackgroundColor: "transparent",
           label:
             chartListLength === 7
-              ? `${event.MappedStationingEnd.toString()}, ${event.Abbr.toLowerCase()}\u25B2`
+              ? `${event.MappedStationingEnd.toFixed(
+                  0
+                )}, ${event.Abbr.toLowerCase()}\u25B2`
               : "",
           showOnTop: true,
           labelFontColor: "#000",
-          labelFontFamily: "Roboto",
+          labelFontFamily: "Calibri",
           labelWrap: true,
           labelAlign: "near",
           labelAngle: 270,
-          labelFontSize: 14,
+          labelFontSize: 11,
           labelMaxWidth: 130,
         });
       }
@@ -442,32 +452,51 @@ async (dataString) => {
             )} \u25BC`
           : "",
       showOnTop: true,
-      labelBackgroundColor: "#fff",
+      labelBackgroundColor: "transparent",
       labelFontColor: "#5a5a5a",
-      labelFontFamily: "Roboto",
+      labelFontFamily: "Calibri",
       labelWrap: false,
       labelAlign: "near",
       labelAngle: 270,
-      labelFontSize: 14,
+      labelFontSize: 11,
       labelMaxWidth: 130,
       labelWrap: true,
     }));
   };
 
+  const generateChartELement = (index, columnName) => {
+    const row = document.createElement("div");
+    row.classList.add("row");
+    document.querySelector(`.${chartContainerClass}`).append(row);
+    const chartColumnName = document.createElement("div");
+    chartColumnName.classList.add("chartColumnName");
+    const paragraph = document.createElement("p");
+    chartColumnName.append(paragraph);
+    row.append(chartColumnName);
+    const chart = document.createElement("div");
+    chart.classList.add("chart");
+    chart.classList.add(`chart-${index + 1}`);
+    chart.setAttribute("id", `chart-${index + 1}${StationingStart.toFixed(0)}`);
+    row.append(chart);
+  };
+
   const addLabels = (index, columnName) => {
     if (index === 7) {
+      document.querySelector(
+        `.${chartContainerClass} .row:nth-of-type(${index + 1}) p`
+      ).innerHTML = `Localization Information [m]`;
       return;
     }
     if (columnName === "Cant Defect") {
       document.querySelector(
-        `.row:nth-of-type(${index + 1}) p`
+        `.${chartContainerClass} .row:nth-of-type(${index + 1}) p`
       ).innerHTML = `Cant Defect 1:${DefectScale.toFixed(
         0
       )} [mm] <br> Cant 1:${SignalScale.toFixed(0)} [mm]`;
       return;
     }
     document.querySelector(
-      `.row:nth-of-type(${index + 1}) p`
+      `.${chartContainerClass} .row:nth-of-type(${index + 1}) p`
     ).innerHTML = `${columnName} <br> 1:${DefectScale.toFixed(0)} [mm]`;
   };
 
@@ -550,11 +579,13 @@ async (dataString) => {
           speedZones,
           chartList.length
         );
-        let height = (Math.abs(maxY - minY) / DefectScale) * 3.7795275591 + 8;
-        if (chartList.length === 7) {
-          height = 133; //92 -> 133
+        let height = (Math.abs(maxY - minY) / DefectScale) * 3.78 + 13;
+        if (height < 10) {
+          height = 10;
         }
-        height = height * 2;
+        if (chartList.length === 7) {
+          height = 133;
+        }
         chartList.push({
           height: height,
           backgroundColor:
@@ -591,7 +622,7 @@ async (dataString) => {
             minimum: minY - 1,
             labelFormatter: () => "",
             labelAutoFit: true,
-            labelFontSize: 14,
+            labelFontSize: 11,
             stripLines: yAxisLabels.map((yAxisLabel, index) => ({
               value: yAxisLabel,
               labelAutoFit: true,
@@ -604,11 +635,11 @@ async (dataString) => {
               label: yAxisLabel.toString(),
               showOnTop: true,
               labelFontColor: "#000",
-              labelFontFamily: "Roboto",
+              labelFontFamily: "Calibri",
               labelWrap: false,
               labelAlign: "near",
               labelBackgroundColor: "transparent",
-              labelFontSize: 14,
+              labelFontSize: 11,
               labelMaxWidth: 30,
             })),
           },
@@ -619,7 +650,7 @@ async (dataString) => {
             labelAutoFit: true,
             labelWrap: false,
             labelFontWeight: "lighter",
-            labelFontSize: 13,
+            labelFontSize: 10,
             interval: 5 * widthRatio,
             labelFormatter:
               chartList.length === 7
@@ -629,7 +660,7 @@ async (dataString) => {
                       ? ""
                       : StationingLabels.find(
                           (label) => label.MeasuredStationingPoint === e.value
-                        )?.MappedStationingPoint || ''
+                        )?.MappedStationingPoint.toFixed(0) || ""
                 : () => "",
             labelAngle: 270,
             stripLines: [...eventStripLines, ...speedZoneStripLines],
@@ -642,6 +673,7 @@ async (dataString) => {
               markerSize: 0,
               dataPoints: lineChartDataPoints,
               lineColor: "black",
+              lineThickness: 0.8,
             },
             ...areaChartData,
             ...thresholdDataSet,
@@ -656,6 +688,7 @@ async (dataString) => {
             markerSize: 0,
             dataPoints: cantData[0],
             lineColor: "black",
+            lineThickness: 0.8,
           });
           const cantDataMax = cantData[3] + 1;
           const cantDataMin = cantData[2] - 1;
@@ -663,8 +696,7 @@ async (dataString) => {
           const prevMin = chartList[chartList.length - 1].axisY.minimum;
           const newMax = Math.max(prevMax, cantDataMax);
           const newMin = Math.min(prevMin, cantDataMin);
-          height =
-            ((Math.abs(newMax - newMin) / DefectScale) * 3.7795275591 + 8) * 2;
+          height = (Math.abs(newMax - newMin) / DefectScale) * 3.78 + 13;
           chartList[chartList.length - 1].axisY.maximum = newMax;
           chartList[chartList.length - 1].axisY.minimum = newMin;
           chartList[chartList.length - 1].height = height;
@@ -679,15 +711,16 @@ async (dataString) => {
             enabled: false,
           },
         };
+        generateChartELement(index, param.columnName);
         addLabels(index, param.columnName);
-        document.querySelector(`#chart-${index + 1}`).style.width = `${
-          PageWidth * 2
-        }px`;
         document.querySelector(
-          `#chart-${index + 1}`
+          `.${chartContainerClass} .chart-${index + 1}`
+        ).style.width = `${PageWidth - 1}px`;
+        document.querySelector(
+          `.${chartContainerClass} .chart-${index + 1}`
         ).style.height = `${height}px`;
         const stockChart = new CanvasJS.StockChart(
-          `chart-${index + 1}`,
+          `chart-${index + 1}${StationingStart.toFixed(0)}`,
           options
         );
         stockChart.render();
@@ -701,10 +734,11 @@ async (dataString) => {
       }
     }
 
-    document.querySelector("#canvasjsChart").style.width = `${
-      (PageWidth + 21) * 2
+    document.querySelector(`.${chartContainerClass}`).style.width = `${
+      PageWidth + 38
     }px`;
-    var canvas = await html2canvas(document.querySelector("#canvasjsChart"));
-    return canvas.toDataURL();
+    document.querySelector(
+      `.${chartContainerClass}`
+    ).parentNode.style.maxHeight = `${PageWidth + 38 + 4}px`;
   }
 };
