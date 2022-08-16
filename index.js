@@ -31402,7 +31402,7 @@ const chartReport = (dataString) => {
         );
         const labelStripLines = generateLabelStripLines(chartList.length);
         let height = (Math.abs(maxY - minY) / DefectScale) * 3.78 + 13;
-        if (height < 10) {
+        if (height < 10 || height === Infinity) {
           height = 10;
         }
         if (chartList.length === 7) {
