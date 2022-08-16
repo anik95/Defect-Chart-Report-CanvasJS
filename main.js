@@ -439,7 +439,7 @@ async (dataString) => {
     return eventStripLines;
   };
 
-  const generateSpeedZoneStriplines = (speedZones, chartListLength) => {
+  const generateSpeedZoneStripLines = (speedZones, chartListLength) => {
     return speedZones.map((limit) => ({
       value: limit.value,
       labelPlacement: "outside",
@@ -461,6 +461,28 @@ async (dataString) => {
       labelFontSize: 11,
       labelMaxWidth: 130,
       labelWrap: true,
+    }));
+  };
+
+  const generateLabelStripLines = (chartListLength) => {
+    return StationingLabels.map((label) => ({
+      value: label.MeasuredStationingPoint,
+      labelPlacement: "outside",
+      lineDashType: "solid",
+      color: "transparent",
+      label: chartListLength === 7 ? `${label.MappedStationingPoint}` : "",
+      showOnTop: true,
+      labelBackgroundColor: "transparent",
+      labelFontColor: "#000",
+      labelFontFamily: "Calibri",
+      labelWrap: false,
+      labelAlign: "near",
+      labelAngle: 270,
+      labelMaxWidth: 130,
+      labelWrap: true,
+      labelAutoFit: true,
+      labelFontWeight: "lighter",
+      labelFontSize: 10,
     }));
   };
 
@@ -558,7 +580,7 @@ async (dataString) => {
     let index = 0;
     const chartList = [];
     const speedZones = chartThresholds.Gauge.Limits.map((limit) => ({
-      value: limit.StationingEnd,
+      value: limit.StationingStart,
       MinSpeed: limit.MinSpeed,
       MaxSpeed: limit.MaxSpeed,
     }));
@@ -575,10 +597,11 @@ async (dataString) => {
         const eventStripLines = DisplayEvents
           ? generateEventStriplines(chartList.length)
           : [];
-        const speedZoneStripLines = generateSpeedZoneStriplines(
+        const speedZoneStripLines = generateSpeedZoneStripLines(
           speedZones,
           chartList.length
         );
+        const labelStripLines = generateLabelStripLines(chartList.length);
         let height = (Math.abs(maxY - minY) / DefectScale) * 3.78 + 13;
         if (height < 10) {
           height = 10;
@@ -610,7 +633,6 @@ async (dataString) => {
               lineDashType: "solid",
               labelFormatter: () => "",
             },
-            interval: 5 * widthRatio,
             stripLines: [...eventStripLines, ...speedZoneStripLines],
           },
           axisY: {
@@ -646,24 +668,18 @@ async (dataString) => {
           axisX: {
             minimum: StationingStart - 1 * widthRatio,
             maximum: StationingEnd + 1 * widthRatio,
-            tickLength: 2,
+            tickLength: 0,
             labelAutoFit: true,
             labelWrap: false,
             labelFontWeight: "lighter",
             labelFontSize: 10,
-            interval: 5 * widthRatio,
-            labelFormatter:
-              chartList.length === 7
-                ? (e) =>
-                    Number(e.value) > StationingEnd &&
-                    Number(e.value) < StationingStart
-                      ? ""
-                      : StationingLabels.find(
-                          (label) => label.MeasuredStationingPoint === e.value
-                        )?.MappedStationingPoint.toFixed(0) || ""
-                : () => "",
+            labelFormatter: () => "",
             labelAngle: 270,
-            stripLines: [...eventStripLines, ...speedZoneStripLines],
+            stripLines: [
+              ...eventStripLines,
+              ...speedZoneStripLines,
+              ...labelStripLines,
+            ],
           },
           data: [
             {
