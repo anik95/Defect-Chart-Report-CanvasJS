@@ -15,6 +15,7 @@ async (dataString) => {
     TwistBaseLength,
     LocalizationScale,
     StationingLabels,
+    LocalizedAttributes,
   } = parsedData;
   const widthRatio = LocalizationScale / 100;
   const chartContainerWrapper = document.createElement("div");
@@ -25,6 +26,7 @@ async (dataString) => {
   chartContainer.classList.add(chartContainerClass);
   chartContainerWrapper.append(chartContainer);
   document.getElementById("defectChartReport").append(chartContainerWrapper);
+  const { ChartTableAttributes } = LocalizedAttributes;
   const chartTypes = [
     {
       id: "VersineVerticalRight",
@@ -32,7 +34,7 @@ async (dataString) => {
       shouldShow: false,
       limitName: "VerticalAlignment",
       limitType: "VersineLimits",
-      columnName: "Versine Vertical Right",
+      columnName: ChartTableAttributes.VersineVerticalRight,
     },
     {
       id: "VersineVerticalLeft",
@@ -40,7 +42,7 @@ async (dataString) => {
       shouldShow: false,
       limitName: "VerticalAlignment",
       limitType: "VersineLimits",
-      columnName: "Versine Vertical Left",
+      columnName: ChartTableAttributes.VersineVerticalLeft,
     },
     {
       id: "VersineHorizontalRight",
@@ -48,7 +50,7 @@ async (dataString) => {
       shouldShow: false,
       limitName: "HorizontalAlignment",
       limitType: "VersineLimits",
-      columnName: "Versine Horizontal Right",
+      columnName: ChartTableAttributes.VersineHorizontalRight,
     },
     {
       id: "VersineHorizontalLeft",
@@ -56,7 +58,7 @@ async (dataString) => {
       shouldShow: false,
       limitName: "HorizontalAlignment",
       limitType: "VersineLimits",
-      columnName: "Versine Horizontal Left",
+      columnName: ChartTableAttributes.VersineHorizontalLeft,
     },
     {
       id: "LongitudinalLevelD2Right",
@@ -64,7 +66,7 @@ async (dataString) => {
       shouldShow: false,
       limitName: "VerticalAlignment",
       limitType: "D2Limits",
-      columnName: "Longitudinal Level Right",
+      columnName: ChartTableAttributes.LongitudinalLevelRight,
     },
     {
       id: "LongitudinalLevelD2Left",
@@ -72,7 +74,7 @@ async (dataString) => {
       shouldShow: false,
       limitName: "VerticalAlignment",
       limitType: "D2Limits",
-      columnName: "Longitudinal Level Left",
+      columnName: ChartTableAttributes.LongitudinalLevelLeft,
     },
     {
       id: "LongitudinalLevelD1Right",
@@ -80,7 +82,7 @@ async (dataString) => {
       shouldShow: false,
       limitName: "VerticalAlignment",
       limitType: "D1Limits",
-      columnName: "Longitudinal Level Right",
+      columnName: ChartTableAttributes.LongitudinalLevelRight,
     },
     {
       id: "LongitudinalLevelD1Left",
@@ -88,7 +90,7 @@ async (dataString) => {
       shouldShow: false,
       limitName: "VerticalAlignment",
       limitType: "D1Limits",
-      columnName: "Longitudinal Level Left",
+      columnName: ChartTableAttributes.LongitudinalLevelLeft,
     },
     {
       id: "AlignmentD2Right",
@@ -96,7 +98,7 @@ async (dataString) => {
       shouldShow: false,
       limitName: "HorizontalAlignment",
       limitType: "D2Limits",
-      columnName: "Alignment Right",
+      columnName: ChartTableAttributes.AlignmentRight,
     },
     {
       id: "AlignmentD2Left",
@@ -104,7 +106,7 @@ async (dataString) => {
       shouldShow: false,
       limitName: "HorizontalAlignment",
       limitType: "D2Limits",
-      columnName: "Alignment Left",
+      columnName: ChartTableAttributes.AlignmentLeft,
     },
     {
       id: "AlignmentD1Right",
@@ -112,7 +114,7 @@ async (dataString) => {
       shouldShow: false,
       limitName: "HorizontalAlignment",
       limitType: "D1Limits",
-      columnName: "Alignment Right",
+      columnName: ChartTableAttributes.AlignmentRight,
     },
     {
       id: "AlignmentD1Left",
@@ -120,7 +122,7 @@ async (dataString) => {
       shouldShow: false,
       limitName: "HorizontalAlignment",
       limitType: "D1Limits",
-      columnName: "Alignment Left",
+      columnName: ChartTableAttributes.AlignmentLeft,
     },
     {
       id: "TwistBase1",
@@ -128,7 +130,7 @@ async (dataString) => {
       shouldShow: true,
       limitName: "Twist",
       limitType: "",
-      columnName: `Twist ${TwistBaseLength}m`,
+      columnName: `${ChartTableAttributes.Twist} ${TwistBaseLength}m`,
     },
     {
       id: "CantDefect",
@@ -136,7 +138,7 @@ async (dataString) => {
       shouldShow: true,
       limitName: "Cant",
       limitType: "",
-      columnName: "Cant Defect",
+      columnName: ChartTableAttributes.CantDefect,
     },
     {
       id: "Cant",
@@ -144,7 +146,7 @@ async (dataString) => {
       shouldShow: false,
       limitName: "Cant",
       limitType: "",
-      columnName: "Cant",
+      columnName: ChartTableAttributes.Cant,
     },
     {
       id: "GaugeDefect",
@@ -152,13 +154,13 @@ async (dataString) => {
       shouldShow: true,
       limitName: "Gauge",
       limitType: "",
-      columnName: "Gauge Defect",
+      columnName: ChartTableAttributes.GaugeDefect,
     },
     {
       id: "Localizations",
       shortName: "Localizations",
       shouldShow: true,
-      columnName: "Localization Information",
+      columnName: ChartTableAttributes.LocalizationInformation,
     },
   ];
 
@@ -400,7 +402,7 @@ async (dataString) => {
         label:
           chartListLength === 7
             ? `${event.MappedStationingStart.toFixed(
-                0
+                2
               )}, ${event.Abbr.toUpperCase()}${event.IsRange ? "\u25BC" : ""}`
             : "",
         showOnTop: true,
@@ -422,7 +424,7 @@ async (dataString) => {
           label:
             chartListLength === 7
               ? `${event.MappedStationingEnd.toFixed(
-                  0
+                  2
                 )}, ${event.Abbr.toLowerCase()}\u25B2`
               : "",
           showOnTop: true,
