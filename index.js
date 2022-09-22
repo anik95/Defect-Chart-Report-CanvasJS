@@ -22551,7 +22551,7 @@ const chartReport = (dataString) => {
     if (index === 7) {
       document.querySelector(
         `.${chartContainerClass} .row:nth-of-type(${index + 1}) p`
-      ).innerHTML = `Localization Information [m]`;
+      ).innerHTML = `${ChartTableAttributes.LocalizationInformation} [m]`;
       return;
     }
     if (columnName === "Cant Defect") {
