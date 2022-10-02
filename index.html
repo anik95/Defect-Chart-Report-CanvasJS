@@ -7,12 +7,6 @@
     <title>Document</title>
     <style>
       .chartContainerWrapper {
-        /* display: flex;
-        justify-content: flex-start;
-        align-items: center;
-        transform: rotate(90deg) translate(0, -100%);
-        border: 2px solid black;
-        transform-origin: 0 0; */
         page-break-after: always;
       }
       .chartContainer {
@@ -25,14 +19,12 @@
         transform-origin: 0 0;
       }
       .chart {
-        overflow: hidden;
         max-height: 131px; /*92px -> 133px*/
         box-sizing: border-box;
         width: 100%;
       }
       .row {
         display: flex;
-        align-items: center;
         justify-content: flex-start;
         border-top: 1px solid #000;
         min-height: 134px; /* 1px extra for boder  - 93px -> 134px*/
@@ -42,13 +34,13 @@
         background-color: transparent;
       }
       .row:nth-of-type(odd) {
-        background-color: rgba(220, 220, 220, 0.5);
+        background-color: #efefef;
       }
       .row:nth-of-type(odd) .canvasjs-chart-panel {
-        box-shadow: 4px 0px 0 rgba(220, 220, 220, 0.6);
+        box-shadow: 4px 0px 0 #efefef;
       }
       .row:nth-of-type(odd) .chartColumnName {
-        box-shadow: 2px 0px 0 rgb(220, 220, 220, 0.6);
+        box-shadow: 2px 0px 0 #efefef;
         position: relative;
         z-index: 1;
       }
@@ -84,14 +76,7 @@
     </style>
   </head>
   <body>
-    <div id="defectChartReport">
-      <!-- <div class="chartContainer">
-        <div class="row">
-          <div class="chartColumnName"><p></p></div>
-          <div class="chart" id="chart-1"></div>
-        </div>
-      </div> -->
-    </div>
+    <div id="defectChartReport"></div>
     <script src="canvasjs.stock.min.js"></script>
     <script src="html2canvas.min.js"></script>
     <script src="index.js"></script>
