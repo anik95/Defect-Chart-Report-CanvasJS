@@ -21861,7 +21861,7 @@ const dataString = JSON.stringify({
               UpperDisplayValue: "5",
             },
             {
-              Lower: -7.0,
+              Lower: -10.0,
               Upper: 7.0,
               LowerDisplayValue: "-7",
               UpperDisplayValue: "7",
@@ -22637,6 +22637,9 @@ const chartReport = (dataString) => {
           param.id === "Localizations" ? [] : generateYAxisLabels(limits);
         const [lineChartDataPoints, areaChartData, minY, maxY] =
           dataPointGenerator(value, limits);
+        const amplitudeToPixelAdjustment = 11;
+        const amplitude =
+          (Math.abs(maxY) / DefectScale) * 3.78 + amplitudeToPixelAdjustment;
         let thresholdDataSet = [];
         thresholdDataSet = generateThresholdStriplines(limits);
         const eventStripLines = DisplayEvents
@@ -22657,9 +22660,7 @@ const chartReport = (dataString) => {
         chartList.push({
           height: height,
           backgroundColor:
-            chartList.length % 2 === 0
-              ? "rgb(220, 220, 220, 0.5)"
-              : "transparent",
+            chartList.length % 2 === 0 ? "#efefef" : "transparent",
           axisX2: {
             minimum: StationingStart - 1 * widthRatio,
             maximum: StationingEnd + 1 * widthRatio,
@@ -22784,6 +22785,14 @@ const chartReport = (dataString) => {
           `chart-${index + 1}${StationingStart.toFixed(0)}`,
           options
         );
+        if (index < 7) {
+          const sign = height > 131 ? "-" : "+";
+          document.querySelector(
+            `.${chartContainerClass} .chart-${index + 1}`
+          ).style.transform = `translate(0, ${sign}${Math.abs(
+            65.5 - amplitude
+          )}px)`;
+        }
         stockChart.render();
         stockChart.charts[0].axisY[0].set(
           "margin",
