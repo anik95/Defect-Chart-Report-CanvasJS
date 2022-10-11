@@ -18,6 +18,7 @@ async (dataString) => {
     LocalizedAttributes,
   } = parsedData;
   const widthRatio = LocalizationScale / 100;
+  const mmToPixel = 3.78;
   const chartContainerWrapper = document.createElement("div");
   chartContainerWrapper.classList.add("chartContainerWrapper");
   const chartContainer = document.createElement("div");
@@ -390,28 +391,36 @@ async (dataString) => {
     return thresholdDataSet;
   };
 
-  const generateEventStriplines = () => {
+  const generateEventStriplines = (speedZones) => {
+    const speedZoneLocalizations = speedZones.map(
+      (speedZone) => speedZone.value
+    );
     const eventStripLines = [];
     events?.forEach((event) => {
-      eventStripLines.push({
-        value: event.MeasuredStationingStart,
-        labelPlacement: "outside",
-        lineDashType: "longDash",
-        labelBackgroundColor: "transparent",
-        color: "#000",
-        label: `${event.MappedStationingStart.toFixed(
-          2
-        )}, ${event.Abbr.toUpperCase()}${event.IsRange ? "\u25BC" : ""}`,
-        showOnTop: true,
-        labelFontColor: "#000",
-        labelFontFamily: "Calibri",
-        labelWrap: true,
-        labelAlign: "near",
-        labelAngle: 270,
-        labelFontSize: 11,
-        labelMaxWidth: 130,
-      });
-      if (event.IsRange) {
+      if (!speedZoneLocalizations.includes(event.MeasuredStationingStart)) {
+        eventStripLines.push({
+          value: event.MeasuredStationingStart,
+          labelPlacement: "outside",
+          lineDashType: "longDash",
+          labelBackgroundColor: "transparent",
+          color: "#000",
+          label: `${event.MappedStationingStart.toFixed(
+            2
+          )}, ${event.Abbr.toUpperCase()}${event.IsRange ? "\u25BC" : ""}`,
+          showOnTop: true,
+          labelFontColor: "#000",
+          labelFontFamily: "Calibri",
+          labelWrap: true,
+          labelAlign: "near",
+          labelAngle: 270,
+          labelFontSize: 11,
+          labelMaxWidth: 90,
+        });
+      }
+      if (
+        event.IsRange &&
+        !speedZoneLocalizations.includes(event.MeasuredStationingEnd)
+      ) {
         eventStripLines.push({
           value: event.MeasuredStationingEnd,
           labelPlacement: "outside",
@@ -428,7 +437,7 @@ async (dataString) => {
           labelAlign: "near",
           labelAngle: 270,
           labelFontSize: 11,
-          labelMaxWidth: 130,
+          labelMaxWidth: 90,
         });
       }
     });
@@ -452,16 +461,30 @@ async (dataString) => {
       labelAlign: "near",
       labelAngle: 270,
       labelFontSize: 11,
-      labelMaxWidth: 130,
+      labelMaxWidth: 90,
       labelWrap: true,
     }));
   };
 
   const generateLabelStripLines = (chartListLength) => {
-    return StationingLabels.map((label) => ({
+    const eventLocalizations = [];
+    let filteredStationingLabels = [...StationingLabels];
+    if (DisplayEvents) {
+      events.forEach((event) => {
+        eventLocalizations.push(event.MeasuredStationingStart);
+        if (event.IsRange) {
+          eventLocalizations.push(event.MeasuredStationingEnd);
+        }
+      });
+      filteredStationingLabels = StationingLabels.filter(
+        (label) => !eventLocalizations.includes(label.MeasuredStationingPoint)
+      );
+    }
+
+    return filteredStationingLabels.map((label) => ({
       value: label.MeasuredStationingPoint,
       labelPlacement: "outside",
-      lineDashType: "shortDot",
+      lineDashType: "dot",
       color: "#000",
       label: chartListLength === 7 ? `${label.MappedStationingPoint}` : "",
       showOnTop: true,
@@ -471,7 +494,7 @@ async (dataString) => {
       labelWrap: false,
       labelAlign: "near",
       labelAngle: 270,
-      labelMaxWidth: 130,
+      labelMaxWidth: 90,
       labelWrap: true,
       labelAutoFit: true,
       labelFontWeight: "lighter",
@@ -516,11 +539,36 @@ async (dataString) => {
   };
 
   const generateYAxisLabels = (limits) => {
-    let labels = [];
+    const upper = [];
+    const lower = [];
     limits?.[0]?.LimitsBySeverity.forEach((limit) => {
-      labels = [...labels, limit.Upper, limit.Lower];
+      upper.push(limit.Upper);
+      lower.push(limit.Lower);
     });
-    return [...labels, 0];
+    const indicesToRemoveFromUpper = [];
+    const indicesToRemoveFromLower = [];
+    const pixelAdjustment = 13;
+    for (let i = 1; i < upper.length; i++) {
+      let upperHeight =
+        (Math.abs(upper[i] - upper[i - 1]) / DefectScale) * mmToPixel +
+        pixelAdjustment;
+      if (upperHeight < 22) {
+        indicesToRemoveFromUpper.push(i - 1);
+      }
+      let lowerHeight =
+        (Math.abs(lower[i] - lower[i - 1]) / DefectScale) * mmToPixel +
+        pixelAdjustment;
+      if (lowerHeight < 22) {
+        indicesToRemoveFromLower.push(i - 1);
+      }
+    }
+    const upperLabels = upper.filter(
+      (_, index) => !indicesToRemoveFromUpper.includes(index)
+    );
+    const lowerLabels = lower.filter(
+      (_, index) => !indicesToRemoveFromLower.includes(index)
+    );
+    return [...lowerLabels, ...upperLabels, 0];
   };
 
   const newChartData = {};
@@ -569,29 +617,39 @@ async (dataString) => {
       Localizations: [],
     };
   }
+  const generateContinuousRow = (numRow, className) => {
+    generateChartElement(numRow, "");
+    const row = document.querySelector(".row:last-of-type");
+    row.classList.add("row-continuous");
+    row.classList.add(className);
+    document.querySelector(
+      `.${chartContainerClass} .chart-${numRow + 1}`
+    ).style.width = `${PageWidth - 1}px`;
+    document.querySelector(
+      `.${chartContainerClass} .chart-${numRow + 1}`
+    ).style.height = `1072px`;
+  };
+
   const generateContinuousLines = (
     index,
     labelStripLines,
     localizations,
     speedZones
   ) => {
-    generateChartElement(index, "");
-    const finalRow = document.querySelector(".row:last-of-type");
-    finalRow.classList.add("row-continuous");
-    document.querySelector(
-      `.${chartContainerClass} .chart-${index + 1}`
-    ).style.width = `${PageWidth - 1}px`;
-    document.querySelector(
-      `.${chartContainerClass} .chart-${index + 1}`
-    ).style.height = `1072px`;
-    let eventStripLines = DisplayEvents ? generateEventStriplines() : [];
+    const eventIndex = index;
+    const speedZoneIndex = index + 1;
+    generateContinuousRow(eventIndex, "event");
+    generateContinuousRow(speedZoneIndex, "speed-zone");
+    let eventStripLines = DisplayEvents
+      ? generateEventStriplines(speedZones)
+      : [];
     let speedZoneStripLines = generateSpeedZoneStripLines(speedZones);
-    const continuousChart = {
+    const continuousChartData = {
       height: 1072,
       backgroundColor: "transparent",
       axisX2: {
-        minimum: StationingStart - 1 * widthRatio,
-        maximum: StationingEnd + 1 * widthRatio,
+        minimum: StationingStart - 0.2 * widthRatio,
+        maximum: StationingEnd + 0.2 * widthRatio,
         lineThickness: 0,
         gridThickness: 0,
         tickLength: 0,
@@ -618,8 +676,8 @@ async (dataString) => {
         labelFontSize: 11,
       },
       axisX: {
-        minimum: StationingStart - 1 * widthRatio,
-        maximum: StationingEnd + 1 * widthRatio,
+        minimum: StationingStart - 0.2 * widthRatio,
+        maximum: StationingEnd + 0.2 * widthRatio,
         tickLength: 0,
         labelAutoFit: true,
         labelWrap: false,
@@ -631,14 +689,6 @@ async (dataString) => {
         labelPlacement: "inside",
         gridThickness: 0,
         lineThickness: 0,
-        stripLines: [
-          ...eventStripLines,
-          ...speedZoneStripLines,
-          ...labelStripLines.map((labelStripLine) => ({
-            ...labelStripLine,
-            labelFormatter: () => "",
-          })),
-        ],
       },
       data: [
         {
@@ -652,10 +702,30 @@ async (dataString) => {
         },
       ],
     };
-    const continuousChartOptions = {
+    const continuousChartWithSpeedZones = {
+      ...continuousChartData,
+      axisX: {
+        ...continuousChartData.axisX,
+        stripLines: [...speedZoneStripLines],
+      },
+    };
+    const continuousChartWithEvents = {
+      ...continuousChartData,
+      axisX: {
+        ...continuousChartData.axisX,
+        stripLines: [
+          ...eventStripLines,
+          ...labelStripLines.map((labelStripLine) => ({
+            ...labelStripLine,
+            labelFormatter: () => "",
+          })),
+        ],
+      },
+    };
+    const commonOptions = {
       backgroundColor: "transparent",
       animationEnabled: false,
-      charts: [continuousChart],
+
       rangeSelector: {
         enabled: false,
       },
@@ -663,17 +733,32 @@ async (dataString) => {
         enabled: false,
       },
     };
-    const continuousStockChart = new CanvasJS.StockChart(
-      `chart-${index + 1}${StationingStart.toFixed(0)}`,
-      continuousChartOptions
+    const continuousChartOptionsWithEvents = {
+      ...commonOptions,
+      charts: [continuousChartWithEvents],
+    };
+    const continuousChartOptionsWithSpeedZones = {
+      ...commonOptions,
+      charts: [continuousChartWithSpeedZones],
+    };
+    //render events chart
+    const continuousEventsStockChart = new CanvasJS.StockChart(
+      `chart-${eventIndex + 1}${StationingStart.toFixed(0)}`,
+      continuousChartOptionsWithEvents
     );
-    continuousStockChart.render();
-    continuousStockChart.charts[0].axisY[0].set(
+    continuousEventsStockChart.render();
+    continuousEventsStockChart.charts[0].axisY[0].set(
       "margin",
       35 -
-        (continuousStockChart.charts[0].axisY[0].bounds.x2 -
-          continuousStockChart.charts[0].axisY[0].bounds.x1)
+        (continuousEventsStockChart.charts[0].axisY[0].bounds.x2 -
+          continuousEventsStockChart.charts[0].axisY[0].bounds.x1)
     );
+    //render speedzone chart
+    const continuousSpeedZoneStockChart = new CanvasJS.StockChart(
+      `chart-${speedZoneIndex + 1}${StationingStart.toFixed(0)}`,
+      continuousChartOptionsWithSpeedZones
+    );
+    continuousSpeedZoneStockChart.render();
   };
   if (chartData) {
     let index = 0;
@@ -701,11 +786,12 @@ async (dataString) => {
         }
         const amplitudeToPixelAdjustment = 11;
         const amplitude =
-          (Math.abs(maxY) / DefectScale) * 3.78 + amplitudeToPixelAdjustment;
+          (Math.abs(maxY) / DefectScale) * mmToPixel +
+          amplitudeToPixelAdjustment;
         let thresholdDataSet = [];
         thresholdDataSet = generateThresholdStriplines(limits);
         labelStripLines = generateLabelStripLines(chartList.length);
-        let height = (Math.abs(maxY - minY) / DefectScale) * 3.78 + 13;
+        let height = (Math.abs(maxY - minY) / DefectScale) * mmToPixel + 13;
         if (height < 10 || height === Infinity) {
           height = 10;
         }
@@ -717,8 +803,8 @@ async (dataString) => {
           backgroundColor:
             chartList.length % 2 === 0 ? "#efefef" : "transparent",
           axisX2: {
-            minimum: StationingStart - 1 * widthRatio,
-            maximum: StationingEnd + 1 * widthRatio,
+            minimum: StationingStart - 0.2 * widthRatio,
+            maximum: StationingEnd + 0.2 * widthRatio,
             lineThickness: 0,
             gridThickness: 0,
             tickLength: 0,
@@ -766,8 +852,8 @@ async (dataString) => {
             })),
           },
           axisX: {
-            minimum: StationingStart - 1 * widthRatio,
-            maximum: StationingEnd + 1 * widthRatio,
+            minimum: StationingStart - 0.2 * widthRatio,
+            maximum: StationingEnd + 0.2 * widthRatio,
             tickLength: 0,
             labelAutoFit: true,
             labelWrap: false,
@@ -814,7 +900,7 @@ async (dataString) => {
           const prevMin = chartList[chartList.length - 1].axisY.minimum;
           const newMax = Math.max(prevMax, cantDataMax);
           const newMin = Math.min(prevMin, cantDataMin);
-          height = (Math.abs(newMax - newMin) / DefectScale) * 3.78 + 13;
+          height = (Math.abs(newMax - newMin) / DefectScale) * mmToPixel + 13;
           chartList[chartList.length - 1].axisY.maximum = newMax;
           chartList[chartList.length - 1].axisY.minimum = newMin;
           chartList[chartList.length - 1].height = height;

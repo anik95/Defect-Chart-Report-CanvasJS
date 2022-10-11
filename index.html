@@ -33,6 +33,7 @@
         box-sizing: border-box;
         overflow: hidden;
         background-color: transparent;
+        position: relative;
       }
       .row:nth-of-type(odd) {
         background-color: #efefef;
@@ -64,6 +65,9 @@
       .row.row-continuous .chart {
         min-height: 1072px;
         transform: translate(0, -10px);
+      }
+      .row.row-continuous.speed-zone .chart {
+        transform: translate(0, -30px);
       }
       .row.row-continuous .canvasjs-chart-panel {
         box-shadow: none;
