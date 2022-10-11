@@ -466,8 +466,11 @@ async (dataString) => {
     }));
   };
 
-  const generateLabelStripLines = (chartListLength) => {
+  const generateLabelStripLines = (chartListLength, speedZones) => {
     const eventLocalizations = [];
+    const speedZoneLocalizations = speedZones.map(
+      (speedZone) => speedZone.value
+    );
     let filteredStationingLabels = [...StationingLabels];
     if (DisplayEvents) {
       events.forEach((event) => {
@@ -477,7 +480,9 @@ async (dataString) => {
         }
       });
       filteredStationingLabels = StationingLabels.filter(
-        (label) => !eventLocalizations.includes(label.MeasuredStationingPoint)
+        (label) =>
+          !eventLocalizations.includes(label.MeasuredStationingPoint) &&
+          !speedZoneLocalizations.includes(label.MeasuredStationingPoint)
       );
     }
 
@@ -790,7 +795,7 @@ async (dataString) => {
           amplitudeToPixelAdjustment;
         let thresholdDataSet = [];
         thresholdDataSet = generateThresholdStriplines(limits);
-        labelStripLines = generateLabelStripLines(chartList.length);
+        labelStripLines = generateLabelStripLines(chartList.length, speedZones);
         let height = (Math.abs(maxY - minY) / DefectScale) * mmToPixel + 13;
         if (height < 10 || height === Infinity) {
           height = 10;

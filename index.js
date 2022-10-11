@@ -17,7 +17,7 @@ const dataString = JSON.stringify({
   NominalGauge: 1.435,
   StationingLabels: [
     {
-      MeasuredStationingPoint: 40.01,
+      MeasuredStationingPoint: 0.01,
       MappedStationingPoint: 2600.0,
     },
     {
@@ -21730,7 +21730,7 @@ const dataString = JSON.stringify({
   Events: [
     {
       TrackEventID: "4e41a4de-a0ff-4434-a1c3-6a2d181bec30",
-      MeasuredStationingStart: 0.01,
+      MeasuredStationingStart: 10.01,
       MeasuredStationingEnd: 0.01,
       MappedStationingStart: 2529.6378644207293,
       MappedStationingEnd: 2529.6378644207293,
@@ -21794,7 +21794,7 @@ const dataString = JSON.stringify({
       DefectEvaluationType: "NominalToPeak",
       Limits: [
         {
-          StationingStart: 0.01,
+          StationingStart: 10.01,
           StationingEnd: 1105.33,
           Speed: 120.00000000000001,
           SpeedZoneId: "0ff4c7f2-caf4-4599-8dad-c84409ed5216",
@@ -22568,8 +22568,11 @@ const chartReport = (dataString) => {
     }));
   };
 
-  const generateLabelStripLines = (chartListLength) => {
+  const generateLabelStripLines = (chartListLength, speedZones) => {
     const eventLocalizations = [];
+    const speedZoneLocalizations = speedZones.map(
+      (speedZone) => speedZone.value
+    );
     let filteredStationingLabels = [...StationingLabels];
     if (DisplayEvents) {
       events.forEach((event) => {
@@ -22579,7 +22582,9 @@ const chartReport = (dataString) => {
         }
       });
       filteredStationingLabels = StationingLabels.filter(
-        (label) => !eventLocalizations.includes(label.MeasuredStationingPoint)
+        (label) =>
+          !eventLocalizations.includes(label.MeasuredStationingPoint) &&
+          !speedZoneLocalizations.includes(label.MeasuredStationingPoint)
       );
     }
 
@@ -22892,7 +22897,7 @@ const chartReport = (dataString) => {
           amplitudeToPixelAdjustment;
         let thresholdDataSet = [];
         thresholdDataSet = generateThresholdStriplines(limits);
-        labelStripLines = generateLabelStripLines(chartList.length);
+        labelStripLines = generateLabelStripLines(chartList.length, speedZones);
         let height = (Math.abs(maxY - minY) / DefectScale) * mmToPixel + 13;
         if (height < 10 || height === Infinity) {
           height = 10;
