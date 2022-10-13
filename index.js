@@ -10,7 +10,7 @@ const dataString = JSON.stringify({
   ProjectName: "1a_IncrLeft_2",
   PageWidth: 511.0,
   LocalizationScale: 2000.0,
-  DefectScale: 2.0,
+  DefectScale: 1.0,
   SignalScale: 10.0,
   DisplayEvents: true,
   TwistBaseLength: 3.0,
