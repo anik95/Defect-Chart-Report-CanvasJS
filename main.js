@@ -19,6 +19,7 @@ async (dataString) => {
   } = parsedData;
   const widthRatio = LocalizationScale / 100;
   const mmToPixel = 3.78;
+  const minDistanceForOverlapForLines = 20;
   const chartContainerWrapper = document.createElement("div");
   chartContainerWrapper.classList.add("chartContainerWrapper");
   const chartContainer = document.createElement("div");
@@ -396,8 +397,20 @@ async (dataString) => {
       (speedZone) => speedZone.value
     );
     const eventStripLines = [];
+    const checkEventSpeedZoneOverlap = (currentEventVal) => {
+      let overlaps = false;
+      speedZoneLocalizations.forEach((speedZone) => {
+        if (
+          getDistanceInPixel(Math.abs(currentEventVal - speedZone)) <
+          minDistanceForOverlapForLines
+        ) {
+          overlaps = true;
+        }
+      });
+      return overlaps;
+    };
     events?.forEach((event) => {
-      if (!speedZoneLocalizations.includes(event.MeasuredStationingStart)) {
+      if (!checkEventSpeedZoneOverlap(event.MeasuredStationingStart)) {
         eventStripLines.push({
           value: event.MeasuredStationingStart,
           labelPlacement: "outside",
@@ -419,7 +432,7 @@ async (dataString) => {
       }
       if (
         event.IsRange &&
-        !speedZoneLocalizations.includes(event.MeasuredStationingEnd)
+        !checkEventSpeedZoneOverlap(event.MeasuredStationingEnd)
       ) {
         eventStripLines.push({
           value: event.MeasuredStationingEnd,
@@ -466,6 +479,11 @@ async (dataString) => {
     }));
   };
 
+  const getDistanceInPixel = (diff) => {
+    const pixelValue = ((diff * 1000) / LocalizationScale) * mmToPixel;
+    return pixelValue;
+  };
+
   const generateLabelStripLines = (chartListLength, speedZones) => {
     const eventLocalizations = [];
     const speedZoneLocalizations = speedZones.map(
@@ -479,11 +497,29 @@ async (dataString) => {
           eventLocalizations.push(event.MeasuredStationingEnd);
         }
       });
-      filteredStationingLabels = StationingLabels.filter(
-        (label) =>
-          !eventLocalizations.includes(label.MeasuredStationingPoint) &&
-          !speedZoneLocalizations.includes(label.MeasuredStationingPoint)
-      );
+      filteredStationingLabels = StationingLabels.filter((label) => {
+        let overlapsWithEvent = false;
+        let overlapsWithSpeedZone = false;
+        eventLocalizations.forEach((event) => {
+          if (
+            getDistanceInPixel(
+              Math.abs(event - label.MeasuredStationingPoint)
+            ) < minDistanceForOverlapForLines
+          ) {
+            overlapsWithEvent = true;
+          }
+        });
+        speedZoneLocalizations.forEach((speedZone) => {
+          if (
+            getDistanceInPixel(
+              Math.abs(speedZone - label.MeasuredStationingPoint)
+            ) < minDistanceForOverlapForLines
+          ) {
+            overlapsWithSpeedZone = true;
+          }
+        });
+        return !(overlapsWithEvent || overlapsWithSpeedZone);
+      });
     }
 
     return filteredStationingLabels.map((label) => ({
