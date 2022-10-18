@@ -496,30 +496,29 @@ async (dataString) => {
           eventLocalizations.push(event.MeasuredStationingEnd);
         }
       });
-      filteredStationingLabels = StationingLabels.filter((label) => {
-        let overlapsWithEvent = false;
-        let overlapsWithSpeedZone = false;
-        eventLocalizations.forEach((event) => {
-          if (
-            getDistanceInPixel(
-              Math.abs(event - label.MeasuredStationingPoint)
-            ) < minDistanceForOverlapForLines
-          ) {
-            overlapsWithEvent = true;
-          }
-        });
-        speedZoneLocalizations.forEach((speedZone) => {
-          if (
-            getDistanceInPixel(
-              Math.abs(speedZone - label.MeasuredStationingPoint)
-            ) < minDistanceForOverlapForLines
-          ) {
-            overlapsWithSpeedZone = true;
-          }
-        });
-        return !(overlapsWithEvent || overlapsWithSpeedZone);
-      });
     }
+    filteredStationingLabels = StationingLabels.filter((label) => {
+      let overlapsWithEvent = false;
+      let overlapsWithSpeedZone = false;
+      eventLocalizations.forEach((event) => {
+        if (
+          getDistanceInPixel(Math.abs(event - label.MeasuredStationingPoint)) <
+          minDistanceForOverlapForLines
+        ) {
+          overlapsWithEvent = true;
+        }
+      });
+      speedZoneLocalizations.forEach((speedZone) => {
+        if (
+          getDistanceInPixel(
+            Math.abs(speedZone - label.MeasuredStationingPoint)
+          ) < minDistanceForOverlapForLines
+        ) {
+          overlapsWithSpeedZone = true;
+        }
+      });
+      return !(overlapsWithEvent || overlapsWithSpeedZone);
+    });
 
     return filteredStationingLabels.map((label) => ({
       value: label.MeasuredStationingPoint,
@@ -746,20 +745,20 @@ async (dataString) => {
       ...continuousChartData,
       axisX: {
         ...continuousChartData.axisX,
-        stripLines: [...speedZoneStripLines],
+        stripLines: [
+          ...speedZoneStripLines,
+          ...labelStripLines.map((labelStripLine) => ({
+            ...labelStripLine,
+            labelFormatter: () => "",
+          })),
+        ],
       },
     };
     const continuousChartWithEvents = {
       ...continuousChartData,
       axisX: {
         ...continuousChartData.axisX,
-        stripLines: [
-          ...eventStripLines,
-          ...labelStripLines.map((labelStripLine) => ({
-            ...labelStripLine,
-            labelFormatter: () => "",
-          })),
-        ],
+        stripLines: [...eventStripLines],
       },
     };
     const commonOptions = {
