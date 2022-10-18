@@ -480,8 +480,7 @@ async (dataString) => {
   };
 
   const getDistanceInPixel = (diff) => {
-    const pixelValue = ((diff * 1000) / LocalizationScale) * mmToPixel;
-    return pixelValue;
+    return ((diff * 1000) / LocalizationScale) * mmToPixel;
   };
 
   const generateLabelStripLines = (chartListLength, speedZones) => {
