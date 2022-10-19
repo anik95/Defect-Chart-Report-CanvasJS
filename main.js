@@ -228,11 +228,11 @@ async (dataString) => {
     let currentThresholdIndex = 0;
     let minY = Math.min(
       values?.[0]?.y || Infinity,
-      limits[0].LimitsBySeverity[2].Lower
+      limits[0]?.LimitsBySeverity?.[2]?.Lower || Infinity
     );
     maxY = Math.max(
       values?.[0]?.y || -Infinity,
-      limits[0].LimitsBySeverity[2].Upper
+      limits[0]?.LimitsBySeverity?.[2]?.Upper || -Infinity
     );
     values?.forEach((value) => {
       if (
@@ -242,17 +242,17 @@ async (dataString) => {
         return;
       }
       let currentChartThreshold = limits[currentThresholdIndex];
-      if (value.x > currentChartThreshold.StationingEnd) {
+      if (value.x > currentChartThreshold?.StationingEnd) {
         if (currentThresholdIndex + 1 < limits.length) {
           currentThresholdIndex += 1;
           currentChartThreshold = limits[currentThresholdIndex];
           minY = Math.min(
             minY,
-            currentChartThreshold.LimitsBySeverity[2].Lower
+            currentChartThreshold?.LimitsBySeverity?.[2]?.Lower || minY
           );
           maxY = Math.max(
             maxY,
-            currentChartThreshold.LimitsBySeverity[2].Upper
+            currentChartThreshold?.LimitsBySeverity?.[2]?.Upper || maxY
           );
         } else {
           lineChartDataPoints.push({ ...value });
@@ -266,40 +266,42 @@ async (dataString) => {
           return;
         }
       }
-      if (value.y > currentChartThreshold.LimitsBySeverity[2].Upper) {
+      if (value.y > currentChartThreshold?.LimitsBySeverity?.[2]?.Upper) {
         lineChartDataPoints.push({ ...value });
         addAreaCharDataPoint(value, areaChartData, "#E40D3B", "IAL");
       } else if (
-        value.y > currentChartThreshold.LimitsBySeverity[1].Upper &&
-        value.y < currentChartThreshold.LimitsBySeverity[2].Upper
+        value.y > currentChartThreshold?.LimitsBySeverity?.[1]?.Upper &&
+        value.y < currentChartThreshold?.LimitsBySeverity?.[2]?.Upper
       ) {
         lineChartDataPoints.push({ ...value });
         addAreaCharDataPoint(value, areaChartData, "#FF9B31", "IL");
       } else if (
-        value.y > currentChartThreshold.LimitsBySeverity[0].Upper &&
-        value.y < currentChartThreshold.LimitsBySeverity[1].Upper
+        value.y > currentChartThreshold?.LimitsBySeverity?.[0]?.Upper &&
+        value.y < currentChartThreshold?.LimitsBySeverity?.[1]?.Upper
       ) {
         lineChartDataPoints.push({ ...value });
         addAreaCharDataPoint(value, areaChartData, "#FFEF35", "AL");
       } else if (
-        value.y < currentChartThreshold.LimitsBySeverity[0].Upper &&
-        value.y > currentChartThreshold.LimitsBySeverity[0].Lower
+        value.y < currentChartThreshold?.LimitsBySeverity?.[0]?.Upper &&
+        value.y > currentChartThreshold?.LimitsBySeverity?.[0]?.Lower
       ) {
         lineChartDataPoints.push({ ...value });
         addAreaCharDataPoint(value, areaChartData, "transparent");
       } else if (
-        value.y < currentChartThreshold.LimitsBySeverity[0].Lower &&
-        value.y > currentChartThreshold.LimitsBySeverity[1].Lower
+        value.y < currentChartThreshold?.LimitsBySeverity?.[0]?.Lower &&
+        value.y > currentChartThreshold?.LimitsBySeverity?.[1]?.Lower
       ) {
         lineChartDataPoints.push({ ...value });
         addAreaCharDataPoint(value, areaChartData, "#FFEF35", "AL");
       } else if (
-        value.y < currentChartThreshold.LimitsBySeverity[1].Lower &&
-        value.y > currentChartThreshold.LimitsBySeverity[2].Lower
+        value.y < currentChartThreshold?.LimitsBySeverity?.[1]?.Lower &&
+        value.y > currentChartThreshold?.LimitsBySeverity?.[2]?.Lower
       ) {
         lineChartDataPoints.push({ ...value });
         addAreaCharDataPoint(value, areaChartData, "#FF9B31", "IL");
-      } else if (value.y < currentChartThreshold.LimitsBySeverity[2].Lower) {
+      } else if (
+        value.y < currentChartThreshold?.LimitsBySeverity?.[2]?.Lower
+      ) {
         lineChartDataPoints.push({ ...value });
         addAreaCharDataPoint(value, areaChartData, "#E40D3B", "IAL");
       } else {
