@@ -582,13 +582,13 @@ async (dataString) => {
   const generateYAxisLabels = (limits) => {
     const upper = [];
     const lower = [];
+    const pixelAdjustment = 13;
     limits?.[0]?.LimitsBySeverity.forEach((limit) => {
       upper.push(limit.Upper);
       lower.push(limit.Lower);
     });
     const indicesToRemoveFromUpper = [];
     const indicesToRemoveFromLower = [];
-    const pixelAdjustment = 13;
     for (let i = 1; i < upper.length; i++) {
       let upperHeight =
         (Math.abs(upper[i] - upper[i - 1]) / DefectScale) * mmToPixel +
@@ -968,8 +968,16 @@ async (dataString) => {
           `chart-${index + 1}${StationingStart.toFixed(0)}`,
           options
         );
+        const referenceLineInTopHalf = () => {
+          return amplitude < 65.5;
+        };
         if (index < 7) {
-          const sign = height > 131 ? "-" : "+";
+          let sign = "+";
+          if (height > 131 && !referenceLineInTopHalf()) {
+            sign = "-";
+          } else if (height < 131 && !referenceLineInTopHalf()) {
+            sign = "-";
+          }
           document.querySelector(
             `.${chartContainerClass} .chart-${index + 1}`
           ).style.transform = `translate(0, ${sign}${Math.abs(
