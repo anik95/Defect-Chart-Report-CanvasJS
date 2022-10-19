@@ -221,7 +221,8 @@ async (dataString) => {
 
   const dataPointGenerator = (values, limits, key = "") => {
     if (!limits.length) {
-      return [values, [], null, null];
+      const yValues = values.map((value) => value.y);
+      return [values, [], Math.min(...yValues), Math.max(...yValues)];
     }
     const lineChartDataPoints = [];
     const areaChartData = [];
