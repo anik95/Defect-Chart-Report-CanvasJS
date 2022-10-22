@@ -590,17 +590,24 @@ async (dataString) => {
     });
     const indicesToRemoveFromUpper = [];
     const indicesToRemoveFromLower = [];
+    const minOverlapLengthInPixels = 22;
+    const distanceBetweenLimitsInPixels = (
+      higherPriorityLimit,
+      lowerPriorityLimit
+    ) => {
+      return (
+        (Math.abs(higherPriorityLimit - lowerPriorityLimit) / DefectScale) *
+          mmToPixel +
+        pixelAdjustment
+      );
+    };
     for (let i = 1; i < upper.length; i++) {
-      let upperHeight =
-        (Math.abs(upper[i] - upper[i - 1]) / DefectScale) * mmToPixel +
-        pixelAdjustment;
-      if (upperHeight < 22) {
+      let upperHeight = distanceBetweenLimitsInPixels(upper[i], upper[i - 1]);
+      if (upperHeight < minOverlapLengthInPixels) {
         indicesToRemoveFromUpper.push(i - 1);
       }
-      let lowerHeight =
-        (Math.abs(lower[i] - lower[i - 1]) / DefectScale) * mmToPixel +
-        pixelAdjustment;
-      if (lowerHeight < 22) {
+      let lowerHeight = distanceBetweenLimitsInPixels(lower[i], lower[i - 1]);
+      if (lowerHeight < minOverlapLengthInPixels) {
         indicesToRemoveFromLower.push(i - 1);
       }
     }
@@ -610,7 +617,33 @@ async (dataString) => {
     const lowerLabels = lower.filter(
       (_, index) => !indicesToRemoveFromLower.includes(index)
     );
-    return [...lowerLabels, ...upperLabels, 0];
+    const shouldShowLabelForZero = () => {
+      let shouldShow = true;
+      const closestLowerLabelToZero = lowerLabels[0];
+      const closestUpperLabelToZero = upperLabels[0];
+      if (
+        distanceBetweenLimitsInPixels(closestLowerLabelToZero, 0) <
+          minOverlapLengthInPixels ||
+        distanceBetweenLimitsInPixels(closestUpperLabelToZero, 0) <
+          minOverlapLengthInPixels
+      ) {
+        shouldShow = false;
+      }
+      return shouldShow;
+    };
+    const allLabels = [...lowerLabels, ...upperLabels];
+    if (shouldShowLabelForZero()) {
+      allLabels.push(0);
+    }
+    if (
+      allLabels.length === 2 &&
+      !allLabels.includes(0) &&
+      distanceBetweenLimitsInPixels(allLabels[1], allLabels[0]) <
+        minOverlapLengthInPixels
+    ) {
+      allLabels.splice(0, 1);
+    }
+    return allLabels;
   };
 
   const newChartData = {};
@@ -840,6 +873,7 @@ async (dataString) => {
         if (chartList.length === 7) {
           height = 133;
         }
+
         chartList.push({
           height: height,
           backgroundColor:
@@ -869,7 +903,7 @@ async (dataString) => {
             gridThickness: 0,
             tickLength: 0,
             maximum: maxY + 1,
-            minimum: minY - 1,
+            minimum: minY - (height < 40 ? (DefectScale > 8 ? 8 : 5) : 2),
             labelFormatter: () => "",
             labelAutoFit: true,
             labelFontSize: 11,
@@ -969,20 +1003,19 @@ async (dataString) => {
           `chart-${index + 1}${StationingStart.toFixed(0)}`,
           options
         );
-        const referenceLineInTopHalf = () => {
-          return amplitude < 65.5;
+        const referenceLineInTopHalf = (halfOfColumnHeight) => {
+          return amplitude < halfOfColumnHeight;
         };
         if (index < 7) {
+          const columnHeight = 131;
           let sign = "+";
-          if (height > 131 && !referenceLineInTopHalf()) {
-            sign = "-";
-          } else if (height < 131 && !referenceLineInTopHalf()) {
+          if (!referenceLineInTopHalf(columnHeight / 2)) {
             sign = "-";
           }
           document.querySelector(
             `.${chartContainerClass} .chart-${index + 1}`
           ).style.transform = `translate(0, ${sign}${Math.abs(
-            65.5 - amplitude
+            columnHeight / 2 - amplitude
           )}px)`;
         }
         stockChart.render();
