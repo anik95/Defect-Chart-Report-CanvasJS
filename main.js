@@ -404,7 +404,7 @@ async (dataString) => {
       let overlaps = false;
       speedZoneLocalizations.forEach((speedZone) => {
         if (
-          getDistanceInPixel(Math.abs(currentEventVal - speedZone)) <
+          getXAxisDistanceInPixel(Math.abs(currentEventVal - speedZone)) <
           minDistanceForOverlapForLines
         ) {
           overlaps = true;
@@ -466,8 +466,8 @@ async (dataString) => {
       labelPlacement: "outside",
       lineDashType: "longDashDot",
       color: "#000",
-      label: `${limit.MinSpeed.toFixed(1)}<V<=${limit.MaxSpeed.toFixed(
-        1
+      label: `${limit.MinSpeed.toFixed(0)}<V<=${limit.MaxSpeed.toFixed(
+        0
       )} \u25BC`,
       showOnTop: true,
       labelBackgroundColor: "transparent",
@@ -482,7 +482,7 @@ async (dataString) => {
     }));
   };
 
-  const getDistanceInPixel = (diff) => {
+  const getXAxisDistanceInPixel = (diff) => {
     return ((diff * 1000) / LocalizationScale) * mmToPixel;
   };
 
@@ -505,15 +505,16 @@ async (dataString) => {
       let overlapsWithSpeedZone = false;
       eventLocalizations.forEach((event) => {
         if (
-          getDistanceInPixel(Math.abs(event - label.MeasuredStationingPoint)) <
-          minDistanceForOverlapForLines
+          getXAxisDistanceInPixel(
+            Math.abs(event - label.MeasuredStationingPoint)
+          ) < minDistanceForOverlapForLines
         ) {
           overlapsWithEvent = true;
         }
       });
       speedZoneLocalizations.forEach((speedZone) => {
         if (
-          getDistanceInPixel(
+          getXAxisDistanceInPixel(
             Math.abs(speedZone - label.MeasuredStationingPoint)
           ) < minDistanceForOverlapForLines
         ) {
@@ -580,6 +581,16 @@ async (dataString) => {
     ).innerHTML = `${columnName} <br> 1:${DefectScale.toFixed(0)} [mm]`;
   };
 
+  const distanceBetweenYAxisPointsInPixels = (
+    higherPriorityLimit,
+    lowerPriorityLimit
+  ) => {
+    return (
+      (Math.abs(higherPriorityLimit - lowerPriorityLimit) / DefectScale) *
+      mmToPixel
+    );
+  };
+
   const generateYAxisLabels = (limits) => {
     const upper = [];
     const lower = [];
@@ -590,23 +601,19 @@ async (dataString) => {
     });
     const indicesToRemoveFromUpper = [];
     const indicesToRemoveFromLower = [];
-    const minOverlapLengthInPixels = 22;
-    const distanceBetweenLimitsInPixels = (
-      higherPriorityLimit,
-      lowerPriorityLimit
-    ) => {
-      return (
-        (Math.abs(higherPriorityLimit - lowerPriorityLimit) / DefectScale) *
-          mmToPixel +
-        pixelAdjustment
-      );
-    };
+    const minOverlapLengthInPixels = 18;
     for (let i = 1; i < upper.length; i++) {
-      let upperHeight = distanceBetweenLimitsInPixels(upper[i], upper[i - 1]);
+      let upperHeight = distanceBetweenYAxisPointsInPixels(
+        upper[i],
+        upper[i - 1]
+      );
       if (upperHeight < minOverlapLengthInPixels) {
         indicesToRemoveFromUpper.push(i - 1);
       }
-      let lowerHeight = distanceBetweenLimitsInPixels(lower[i], lower[i - 1]);
+      let lowerHeight = distanceBetweenYAxisPointsInPixels(
+        lower[i],
+        lower[i - 1]
+      );
       if (lowerHeight < minOverlapLengthInPixels) {
         indicesToRemoveFromLower.push(i - 1);
       }
@@ -622,9 +629,9 @@ async (dataString) => {
       const closestLowerLabelToZero = lowerLabels[0];
       const closestUpperLabelToZero = upperLabels[0];
       if (
-        distanceBetweenLimitsInPixels(closestLowerLabelToZero, 0) <
+        distanceBetweenYAxisPointsInPixels(closestLowerLabelToZero, 0) <
           minOverlapLengthInPixels ||
-        distanceBetweenLimitsInPixels(closestUpperLabelToZero, 0) <
+        distanceBetweenYAxisPointsInPixels(closestUpperLabelToZero, 0) <
           minOverlapLengthInPixels
       ) {
         shouldShow = false;
@@ -638,7 +645,7 @@ async (dataString) => {
     if (
       allLabels.length === 2 &&
       !allLabels.includes(0) &&
-      distanceBetweenLimitsInPixels(allLabels[1], allLabels[0]) <
+      distanceBetweenYAxisPointsInPixels(allLabels[1], allLabels[0]) <
         minOverlapLengthInPixels
     ) {
       allLabels.splice(0, 1);
@@ -851,6 +858,10 @@ async (dataString) => {
         const limits = configureThresholdLimits(param);
         const yAxisLabels =
           param.id === "Localizations" ? [] : generateYAxisLabels(limits);
+        const showReferenceLineLabel = yAxisLabels.includes(0);
+        if (!showReferenceLineLabel) {
+          yAxisLabels.push(0);
+        }
         const [lineChartDataPoints, areaChartData, minY, maxY] =
           dataPointGenerator(value, limits);
         if (!continuousLocalizationPoints.length) {
@@ -874,6 +885,112 @@ async (dataString) => {
           height = 133;
         }
 
+        const getPriorityNumber = (priorityLabel) => {
+          switch (priorityLabel) {
+            case "al":
+              return 1;
+            case "il":
+              return 2;
+            case "ial":
+              return 3;
+            default:
+              return 0;
+          }
+        };
+
+        const getPeakMeanAndLength = (areaChartData) => {
+          const allData = [];
+          areaChartData.forEach((areaData, index) => {
+            if (areaData.dataPoints.length <= 1 || areaData.severityFlag === "")
+              return;
+            const lengthAndPeakData = [];
+            const areaStartLocalization = areaData.dataPoints[0].x;
+            const areaEndLocalization =
+              areaData.dataPoints[areaData.dataPoints.length - 1].x;
+            const isMaxPeak =
+              areaData.dataPoints[Math.ceil(areaData.dataPoints.length / 2)].y >
+              0;
+            let maxY = -Infinity;
+            let minY = +Infinity;
+            const diff = areaEndLocalization - areaStartLocalization;
+            const xValue = (areaEndLocalization + areaStartLocalization) / 2;
+            const priority = getPriorityNumber(
+              areaData.severityFlag.toLowerCase()
+            );
+            const currentLengthData = {
+              x: xValue,
+              y: isMaxPeak ? -3 : 3,
+              indexLabel: diff.toFixed(1),
+              indexLabelOrientation: "horizontal",
+              indexLabelFontSize: 8,
+              indexLabelFontWeight: "bolder",
+              indexLabelBackgroundColor: "transparent",
+              priority,
+            };
+            lengthAndPeakData.push(currentLengthData);
+
+            areaData.dataPoints.forEach((point) => {
+              if (isMaxPeak) {
+                if (maxY < point.y) {
+                  maxY = point.y;
+                }
+                return;
+              }
+              if (minY > point.y) {
+                minY = point.y;
+              }
+            });
+            lengthAndPeakData.push({
+              x: areaData.dataPoints[Math.ceil(areaData.dataPoints.length / 2)]
+                .x,
+              y: isMaxPeak ? 5 : -5,
+              indexLabel: (isMaxPeak ? maxY : minY).toFixed(1),
+              indexLabelOrientation: "vertical",
+              indexLabelFontSize: 8,
+              indexLabelFontWeight: "bolder",
+              indexLabelBackgroundColor: "transparent",
+              priority,
+            });
+            const hasLengthOverlap = (currlengthPeak) => {
+              if (!allData.length) {
+                return false;
+              }
+              const prevLengthData = allData[allData.length - 1][0].x;
+              const prevPeakData = allData[allData.length - 1][1].x;
+              const prevPriority = allData[allData.length - 1][0].priority;
+              const currLengthData = currentLengthData[0].x;
+              const currPeakData = currentLengthData[1].x;
+              const currPriority = currentLengthData[0].priority;
+              //check if two x coordinates have distance less than 30
+              if (
+                getXAxisDistanceInPixel(currLengthData - prevLengthData) < 30
+              ) {
+                //check priority
+                if (currPriority > prevPriority) {
+                  //if prev data has lower priority then remove it from all data && push new data
+                  allData.splice(allData[allData.length - 1], 1);
+                  allData.push(currlengthPeak);
+                }
+              }
+            };
+            // if (!hasLengthOverlap(lengthAndPeakData)) {
+            //   allData.push(lengthAndPeakData);
+            // }
+            allData.push(lengthAndPeakData);
+          });
+          const scatterChartPoints = [];
+          allData.forEach((data) => {
+            scatterChartPoints.push(data[0]);
+            scatterChartPoints.push(data[1]);
+          });
+          return {
+            type: "scatter",
+            highlightEnabled: false,
+            fillOpacity: 0,
+            dataPoints: scatterChartPoints,
+          };
+        };
+        const peakAndLengthDataPoints = getPeakMeanAndLength(areaChartData);
         chartList.push({
           height: height,
           backgroundColor:
@@ -912,11 +1029,11 @@ async (dataString) => {
               labelAutoFit: true,
               labelPlacement: "outside",
               lineDashType: "solid",
-              color:
-                yAxisLabel === 0 && index === yAxisLabels.length - 1
-                  ? "#000"
-                  : "transparent",
-              label: yAxisLabel.toString(),
+              color: yAxisLabel === 0 ? "#000" : "transparent",
+              label:
+                !showReferenceLineLabel && yAxisLabel === 0
+                  ? ""
+                  : yAxisLabel.toString(),
               showOnTop: true,
               labelFontColor: "#000",
               labelFontFamily: "Calibri",
@@ -938,12 +1055,8 @@ async (dataString) => {
             labelFormatter: () => "",
             labelAngle: 270,
             stripLines: [...labelStripLines],
-            ...(index === 7
-              ? {
-                  gridThickness: 0,
-                  lineThickness: 0,
-                }
-              : null),
+            gridThickness: 0,
+            lineThickness: 0,
           },
           data: [
             {
@@ -957,6 +1070,7 @@ async (dataString) => {
             },
             ...areaChartData,
             ...thresholdDataSet,
+            peakAndLengthDataPoints,
           ],
         });
         if (param.shortName === "CantDefect") {
