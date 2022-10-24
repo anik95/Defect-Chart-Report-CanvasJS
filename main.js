@@ -36,7 +36,7 @@ async (dataString) => {
       shouldShow: false,
       limitName: "VerticalAlignment",
       limitType: "VersineLimits",
-      columnName: ChartTableAttributes.VersineVerticalRight,
+      columnName: ChartTableAttributes.LongitudinalLevelRight,
     },
     {
       id: "VersineVerticalLeft",
@@ -44,7 +44,7 @@ async (dataString) => {
       shouldShow: false,
       limitName: "VerticalAlignment",
       limitType: "VersineLimits",
-      columnName: ChartTableAttributes.VersineVerticalLeft,
+      columnName: ChartTableAttributes.LongitudinalLevelLeft,
     },
     {
       id: "VersineHorizontalRight",
@@ -52,7 +52,7 @@ async (dataString) => {
       shouldShow: false,
       limitName: "HorizontalAlignment",
       limitType: "VersineLimits",
-      columnName: ChartTableAttributes.VersineHorizontalRight,
+      columnName: ChartTableAttributes.AlignmentRight,
     },
     {
       id: "VersineHorizontalLeft",
@@ -60,7 +60,7 @@ async (dataString) => {
       shouldShow: false,
       limitName: "HorizontalAlignment",
       limitType: "VersineLimits",
-      columnName: ChartTableAttributes.VersineHorizontalLeft,
+      columnName: ChartTableAttributes.AlignmentLeft,
     },
     {
       id: "LongitudinalLevelD2Right",
