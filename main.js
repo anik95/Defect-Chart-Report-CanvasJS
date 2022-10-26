@@ -897,9 +897,9 @@ async (dataString) => {
               return 0;
           }
         };
-
         const getPeakMeanAndLength = (areaChartData) => {
           const allData = [];
+          let minPixelsForLengthOverlap = 16;
           areaChartData.forEach((areaData, index) => {
             if (areaData.dataPoints.length <= 1 || areaData.severityFlag === "")
               return;
@@ -944,39 +944,48 @@ async (dataString) => {
               x: areaData.dataPoints[Math.ceil(areaData.dataPoints.length / 2)]
                 .x,
               y: isMaxPeak ? 5 : -5,
-              indexLabel: (isMaxPeak ? maxY : minY).toFixed(1),
+              indexLabel: Math.abs(isMaxPeak ? maxY : minY).toFixed(1),
               indexLabelOrientation: "vertical",
               indexLabelFontSize: 8,
               indexLabelFontWeight: "bolder",
               indexLabelBackgroundColor: "transparent",
               priority,
             });
-            const hasLengthOverlap = (currlengthPeak) => {
+            const handleLengthOverlap = (currlengthPeak) => {
               if (!allData.length) {
-                return false;
+                return;
               }
-              const prevLengthData = allData[allData.length - 1][0].x;
-              const prevPeakData = allData[allData.length - 1][1].x;
+              const prevLength = allData[allData.length - 1][0].x;
+              const prevPeak = allData[allData.length - 1][1].x;
+              const isPrevMaxPeak = allData[allData.length - 1][1].y < 0;
               const prevPriority = allData[allData.length - 1][0].priority;
-              const currLengthData = currentLengthData[0].x;
-              const currPeakData = currentLengthData[1].x;
-              const currPriority = currentLengthData[0].priority;
-              //check if two x coordinates have distance less than 30
+              const currLength = currlengthPeak[0].x;
+              const currPeak = currlengthPeak[1].x;
+              const currPriority = currlengthPeak[0].priority;
+              const isCurrMaxPeak = currlengthPeak[1].y < 0;
+              const insertData = [];
+              //check if two x coordinates have distance less than 30 i.e overlaps
               if (
-                getXAxisDistanceInPixel(currLengthData - prevLengthData) < 30
+                isPrevMaxPeak === isCurrMaxPeak &&
+                getXAxisDistanceInPixel(currLength - prevLength) <
+                  minPixelsForLengthOverlap
               ) {
                 //check priority
                 if (currPriority > prevPriority) {
                   //if prev data has lower priority then remove it from all data && push new data
-                  allData.splice(allData[allData.length - 1], 1);
+                  allData[allData.length - 1][0].indexLabelFontColor =
+                    "transparent";
                   allData.push(currlengthPeak);
                 }
+              } else {
+                allData.push(currlengthPeak);
               }
             };
-            // if (!hasLengthOverlap(lengthAndPeakData)) {
-            //   allData.push(lengthAndPeakData);
-            // }
-            allData.push(lengthAndPeakData);
+            if (!allData.length) {
+              allData.push(lengthAndPeakData);
+            } else {
+              handleLengthOverlap(lengthAndPeakData);
+            }
           });
           const scatterChartPoints = [];
           allData.forEach((data) => {
@@ -991,6 +1000,7 @@ async (dataString) => {
           };
         };
         const peakAndLengthDataPoints = getPeakMeanAndLength(areaChartData);
+
         chartList.push({
           height: height,
           backgroundColor:
