@@ -483,7 +483,7 @@ async (dataString) => {
   };
 
   const getXAxisDistanceInPixel = (diff) => {
-    return ((diff * 1000) / LocalizationScale) * mmToPixel;
+    return ((Math.abs(diff) * 1000) / LocalizationScale) * mmToPixel;
   };
 
   const generateLabelStripLines = (chartListLength, speedZones) => {
@@ -957,14 +957,14 @@ async (dataString) => {
               }
               const prevLength = allData[allData.length - 1][0].x;
               const prevPeak = allData[allData.length - 1][1].x;
-              const isPrevMaxPeak = allData[allData.length - 1][1].y < 0;
+              const isPrevMaxPeak = allData[allData.length - 1][1].y < 0; //length data shown below refernce line
               const prevPriority = allData[allData.length - 1][0].priority;
               const currLength = currlengthPeak[0].x;
               const currPeak = currlengthPeak[1].x;
               const currPriority = currlengthPeak[0].priority;
               const isCurrMaxPeak = currlengthPeak[1].y < 0;
               const insertData = [];
-              //check if two x coordinates have distance less than 30 i.e overlaps
+              //check if two x coordinates for length have distance less than 30 i.e overlaps
               if (
                 isPrevMaxPeak === isCurrMaxPeak &&
                 getXAxisDistanceInPixel(currLength - prevLength) <
@@ -975,12 +975,41 @@ async (dataString) => {
                   //if prev data has lower priority then remove it from all data && push new data
                   allData[allData.length - 1][0].indexLabelFontColor =
                     "transparent";
-                  allData.push(currlengthPeak);
+                  // allData.push(currlengthPeak);
+                } else {
+                  currlengthPeak[0].indexLabelFontColor = "transparent";
                 }
-              } else {
-                allData.push(currlengthPeak);
               }
+              //check if two x coordinates for peak have distance less than 10 i.e overlaps
+              if (
+                isPrevMaxPeak === isCurrMaxPeak &&
+                getXAxisDistanceInPixel(currPeak - prevPeak) < 10
+              ) {
+                //check priority
+                if (currPriority > prevPriority) {
+                  //if prev data has lower priority then remove it from all data && push new data
+                  allData[allData.length - 1][1].indexLabelFontColor =
+                    "transparent";
+                  // allData.push(currlengthPeak);
+                } else {
+                  currlengthPeak[1].indexLabelFontColor = "transparent";
+                }
+              }
+              // if (isPrevMaxPeak !== isCurrMaxPeak) {
+              // } {
+              //   if (isCurrMaxPeak && getXAxisDistanceInPixel(currLength - prevPeak) < minPixelsForLengthOverlap) {
+
+              //   }
+              // }
+              allData.push(currlengthPeak);
+              // if (isPrevMaxPeak === isCurrMaxPeak &&
+              //   getXAxisDistanceInPixel(currLength - prevLength) <
+              //   10
+              //   ) {
+
+              // }
             };
+
             if (!allData.length) {
               allData.push(lengthAndPeakData);
             } else {
