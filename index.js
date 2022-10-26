@@ -24179,7 +24179,7 @@ const chartReport = (dataString) => {
       shouldShow: false,
       limitName: "VerticalAlignment",
       limitType: "VersineLimits",
-      columnName: ChartTableAttributes.VersineVerticalRight,
+      columnName: ChartTableAttributes.LongitudinalLevelRight,
     },
     {
       id: "VersineVerticalLeft",
@@ -24187,7 +24187,7 @@ const chartReport = (dataString) => {
       shouldShow: false,
       limitName: "VerticalAlignment",
       limitType: "VersineLimits",
-      columnName: ChartTableAttributes.VersineVerticalLeft,
+      columnName: ChartTableAttributes.LongitudinalLevelLeft,
     },
     {
       id: "VersineHorizontalRight",
@@ -24195,7 +24195,7 @@ const chartReport = (dataString) => {
       shouldShow: false,
       limitName: "HorizontalAlignment",
       limitType: "VersineLimits",
-      columnName: ChartTableAttributes.VersineHorizontalRight,
+      columnName: ChartTableAttributes.AlignmentRight,
     },
     {
       id: "VersineHorizontalLeft",
@@ -24203,7 +24203,7 @@ const chartReport = (dataString) => {
       shouldShow: false,
       limitName: "HorizontalAlignment",
       limitType: "VersineLimits",
-      columnName: ChartTableAttributes.VersineHorizontalLeft,
+      columnName: ChartTableAttributes.AlignmentLeft,
     },
     {
       id: "LongitudinalLevelD2Right",
