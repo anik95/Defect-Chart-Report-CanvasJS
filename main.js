@@ -576,6 +576,12 @@ async (dataString) => {
       )} [mm] <br> Cant 1:${SignalScale.toFixed(0)} [mm]`;
       return;
     }
+    if (columnName.toLowerCase().includes("twist")) {
+      document.querySelector(
+        `.${chartContainerClass} .row:nth-of-type(${index + 1}) p`
+      ).innerHTML = `${columnName} <br> 1:${DefectScale.toFixed(0)} [mm/m]`;
+      return;
+    }
     document.querySelector(
       `.${chartContainerClass} .row:nth-of-type(${index + 1}) p`
     ).innerHTML = `${columnName} <br> 1:${DefectScale.toFixed(0)} [mm]`;
@@ -859,10 +865,10 @@ async (dataString) => {
         const yAxisLabels =
           param.id === "Localizations" ? [] : generateYAxisLabels(limits);
         const showReferenceLineLabel = yAxisLabels.includes(0);
-        if (!showReferenceLineLabel) {
+        if (!showReferenceLineLabel && param.id !== "Localizations") {
           yAxisLabels.push(0);
         }
-        const [lineChartDataPoints, areaChartData, minY, maxY] =
+        let [lineChartDataPoints, areaChartData, minY, maxY] =
           dataPointGenerator(value, limits);
         if (!continuousLocalizationPoints.length) {
           continuousLocalizationPoints = lineChartDataPoints.map((point) => ({
@@ -870,21 +876,19 @@ async (dataString) => {
             y: 0,
           }));
         }
-        const amplitudeToPixelAdjustment = 11;
-        const amplitude =
-          (Math.abs(maxY) / DefectScale) * mmToPixel +
-          amplitudeToPixelAdjustment;
+        maxY = Math.max(maxY, 0);
+        minY = Math.min(minY, 0);
+        const amplitude = (Math.abs(maxY) / DefectScale) * mmToPixel;
         let thresholdDataSet = [];
         thresholdDataSet = generateThresholdStriplines(limits);
         labelStripLines = generateLabelStripLines(chartList.length, speedZones);
         let height = (Math.abs(maxY - minY) / DefectScale) * mmToPixel + 13;
-        if (height < 10 || height === Infinity) {
-          height = 10;
+        if (height < 20 || height === Infinity) {
+          height = 20;
         }
         if (chartList.length === 7) {
           height = 133;
         }
-
         const getPriorityNumber = (priorityLabel) => {
           switch (priorityLabel) {
             case "al":
@@ -1161,15 +1165,24 @@ async (dataString) => {
         };
         if (index < 7) {
           const columnHeight = 131;
-          let sign = "+";
+          let shift = columnHeight / 2 - amplitude;
+          // let sign = "+";
+          let amplitudeToPixelAdjustment = -10;
           if (!referenceLineInTopHalf(columnHeight / 2)) {
-            sign = "-";
+            // sign = "-";
+            if (Math.abs(shift) > 65) {
+              amplitudeToPixelAdjustment = 0;
+            } else {
+              amplitudeToPixelAdjustment = -4;
+            }
+            if (shift > 0) {
+              shift = shift * -1;
+            }
           }
+          shift = shift + amplitudeToPixelAdjustment;
           document.querySelector(
             `.${chartContainerClass} .chart-${index + 1}`
-          ).style.transform = `translate(0, ${sign}${Math.abs(
-            columnHeight / 2 - amplitude
-          )}px)`;
+          ).style.transform = `translate(0, ${shift}px)`;
         }
         stockChart.render();
         stockChart.charts[0].axisY[0].set(
