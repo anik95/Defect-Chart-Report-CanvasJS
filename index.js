@@ -64552,7 +64552,7 @@ const chartReport = (dataString) => {
       labelAlign: "near",
       labelAngle: 270,
       labelFontSize: 11,
-      labelMaxWidth: 90,
+      labelMaxWidth: 70,
       labelWrap: true,
     }));
   };
@@ -64808,7 +64808,7 @@ const chartReport = (dataString) => {
       : [];
     let speedZoneStripLines = generateSpeedZoneStripLines(speedZones);
     const continuousChartData = {
-      height: 1072,
+      height: 1072, 
       backgroundColor: "transparent",
       axisX2: {
         minimum: StationingStart - 0.2 * widthRatio,
