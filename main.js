@@ -878,6 +878,12 @@ async (dataString) => {
         }
         maxY = Math.max(maxY, 0);
         minY = Math.min(minY, 0);
+        if (minY === 0) {
+          minY = -2;
+        }
+        if (maxY === 0) {
+          maxY = 2;
+        }
         const amplitude = (Math.abs(maxY) / DefectScale) * mmToPixel;
         let thresholdDataSet = [];
         thresholdDataSet = generateThresholdStriplines(limits);
