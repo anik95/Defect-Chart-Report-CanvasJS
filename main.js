@@ -428,8 +428,8 @@ async (dataString) => {
           labelWrap: true,
           labelAlign: "near",
           labelAngle: 270,
-          labelFontSize: 11,
-          labelMaxWidth: 90,
+          labelFontSize: 10,
+          labelMaxWidth: 95,
         });
       }
       if (
@@ -451,8 +451,8 @@ async (dataString) => {
           labelWrap: true,
           labelAlign: "near",
           labelAngle: 270,
-          labelFontSize: 11,
-          labelMaxWidth: 90,
+          labelFontSize: 10,
+          labelMaxWidth: 95,
         });
       }
     });
@@ -474,7 +474,7 @@ async (dataString) => {
       labelFontFamily: "Calibri",
       labelAlign: "near",
       labelAngle: 270,
-      labelFontSize: 11,
+      labelFontSize: 10,
       labelMaxWidth: 70,
       labelWrap: true,
     }));
