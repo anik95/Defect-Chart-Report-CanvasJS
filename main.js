@@ -724,8 +724,10 @@ async (dataString) => {
   ) => {
     const eventIndex = index;
     const speedZoneIndex = index + 1;
+    const localizationLabelIndex = index + 2;
     generateContinuousRow(eventIndex, "event");
     generateContinuousRow(speedZoneIndex, "speed-zone");
+    generateContinuousRow(localizationLabelIndex, "localization-label");
     let eventStripLines = DisplayEvents
       ? generateEventStriplines(speedZones)
       : [];
@@ -792,13 +794,7 @@ async (dataString) => {
       ...continuousChartData,
       axisX: {
         ...continuousChartData.axisX,
-        stripLines: [
-          ...speedZoneStripLines,
-          ...labelStripLines.map((labelStripLine) => ({
-            ...labelStripLine,
-            labelFormatter: () => "",
-          })),
-        ],
+        stripLines: [...speedZoneStripLines],
       },
     };
     const continuousChartWithEvents = {
@@ -808,6 +804,14 @@ async (dataString) => {
         stripLines: [...eventStripLines],
       },
     };
+    const continuousChartWithLocalizationLabels = {
+      ...continuousChartData,
+      axisX: {
+        ...continuousChartData.axisX,
+        stripLines: [...labelStripLines],
+      },
+    };
+
     const commonOptions = {
       backgroundColor: "transparent",
       animationEnabled: false,
@@ -827,6 +831,10 @@ async (dataString) => {
       ...commonOptions,
       charts: [continuousChartWithSpeedZones],
     };
+    const continuousChartOptionsWithLocalizationLabels = {
+      ...commonOptions,
+      charts: [continuousChartWithLocalizationLabels],
+    };
     //render events chart
     const continuousEventsStockChart = new CanvasJS.StockChart(
       `chart-${eventIndex + 1}${StationingStart.toFixed(0)}`,
@@ -845,6 +853,12 @@ async (dataString) => {
       continuousChartOptionsWithSpeedZones
     );
     continuousSpeedZoneStockChart.render();
+    //render localization labeels chart
+    const continuousLocalizationLabelStockChart = new CanvasJS.StockChart(
+      `chart-${localizationLabelIndex + 1}${StationingStart.toFixed(0)}`,
+      continuousChartOptionsWithLocalizationLabels
+    );
+    continuousLocalizationLabelStockChart.render();
   };
   if (chartData) {
     let index = 0;
@@ -983,7 +997,6 @@ async (dataString) => {
                   //if prev data has lower priority then remove it from all data && push new data
                   allData[allData.length - 1][0].indexLabelFontColor =
                     "transparent";
-                  // allData.push(currlengthPeak);
                 } else {
                   currlengthPeak[0].indexLabelFontColor = "transparent";
                 }
@@ -998,24 +1011,11 @@ async (dataString) => {
                   //if prev data has lower priority then remove it from all data && push new data
                   allData[allData.length - 1][1].indexLabelFontColor =
                     "transparent";
-                  // allData.push(currlengthPeak);
                 } else {
                   currlengthPeak[1].indexLabelFontColor = "transparent";
                 }
               }
-              // if (isPrevMaxPeak !== isCurrMaxPeak) {
-              // } {
-              //   if (isCurrMaxPeak && getXAxisDistanceInPixel(currLength - prevPeak) < minPixelsForLengthOverlap) {
-
-              //   }
-              // }
               allData.push(currlengthPeak);
-              // if (isPrevMaxPeak === isCurrMaxPeak &&
-              //   getXAxisDistanceInPixel(currLength - prevLength) <
-              //   10
-              //   ) {
-
-              // }
             };
 
             if (!allData.length) {
@@ -1101,7 +1101,6 @@ async (dataString) => {
             labelFontSize: 10,
             labelFormatter: () => "",
             labelAngle: 270,
-            stripLines: [...labelStripLines],
             gridThickness: 0,
             lineThickness: 0,
           },
