@@ -6,6 +6,7 @@ async (dataString) => {
     Events: events,
     MeasuredStationingStart: StationingStart,
     MeasuredStationingEnd: StationingEnd,
+    ConvertedMeasuredStationingStart,
     PageWidth,
     PageHeight,
     DefectScale,
@@ -16,9 +17,10 @@ async (dataString) => {
     LocalizationScale,
     StationingLabels,
     LocalizedAttributes,
+    HeaderTableUnitAttributes,
   } = parsedData;
   const widthRatio = LocalizationScale / 100;
-  const mmToPixel = 3.78;
+  const mToPixel = 3.78 * 1000;
   const minDistanceForOverlapForLines = 20;
   const chartContainerWrapper = document.createElement("div");
   chartContainerWrapper.classList.add("chartContainerWrapper");
@@ -37,6 +39,7 @@ async (dataString) => {
       limitName: "VerticalAlignment",
       limitType: "VersineLimits",
       columnName: ChartTableAttributes.LongitudinalLevelRight,
+      unit: HeaderTableUnitAttributes["VersineVerticalRight"],
     },
     {
       id: "VersineVerticalLeft",
@@ -45,6 +48,7 @@ async (dataString) => {
       limitName: "VerticalAlignment",
       limitType: "VersineLimits",
       columnName: ChartTableAttributes.LongitudinalLevelLeft,
+      unit: HeaderTableUnitAttributes["VersineVerticalLeft"],
     },
     {
       id: "VersineHorizontalRight",
@@ -53,6 +57,7 @@ async (dataString) => {
       limitName: "HorizontalAlignment",
       limitType: "VersineLimits",
       columnName: ChartTableAttributes.AlignmentRight,
+      unit: HeaderTableUnitAttributes["VersineHorizontalRight"],
     },
     {
       id: "VersineHorizontalLeft",
@@ -61,6 +66,7 @@ async (dataString) => {
       limitName: "HorizontalAlignment",
       limitType: "VersineLimits",
       columnName: ChartTableAttributes.AlignmentLeft,
+      unit: HeaderTableUnitAttributes["VersineHorizontalLeft"],
     },
     {
       id: "LongitudinalLevelD2Right",
@@ -69,6 +75,7 @@ async (dataString) => {
       limitName: "VerticalAlignment",
       limitType: "D2Limits",
       columnName: ChartTableAttributes.LongitudinalLevelRight,
+      unit: HeaderTableUnitAttributes["LongitudinalLevelD2Right"],
     },
     {
       id: "LongitudinalLevelD2Left",
@@ -77,6 +84,7 @@ async (dataString) => {
       limitName: "VerticalAlignment",
       limitType: "D2Limits",
       columnName: ChartTableAttributes.LongitudinalLevelLeft,
+      unit: HeaderTableUnitAttributes["LongitudinalLevelD2Left"],
     },
     {
       id: "LongitudinalLevelD1Right",
@@ -85,6 +93,7 @@ async (dataString) => {
       limitName: "VerticalAlignment",
       limitType: "D1Limits",
       columnName: ChartTableAttributes.LongitudinalLevelRight,
+      unit: HeaderTableUnitAttributes["LongitudinalLevelD1Right"],
     },
     {
       id: "LongitudinalLevelD1Left",
@@ -93,6 +102,7 @@ async (dataString) => {
       limitName: "VerticalAlignment",
       limitType: "D1Limits",
       columnName: ChartTableAttributes.LongitudinalLevelLeft,
+      unit: HeaderTableUnitAttributes["LongitudinalLevelD1Left"],
     },
     {
       id: "AlignmentD2Right",
@@ -101,6 +111,7 @@ async (dataString) => {
       limitName: "HorizontalAlignment",
       limitType: "D2Limits",
       columnName: ChartTableAttributes.AlignmentRight,
+      unit: HeaderTableUnitAttributes["AlignmentD2Right"],
     },
     {
       id: "AlignmentD2Left",
@@ -109,6 +120,7 @@ async (dataString) => {
       limitName: "HorizontalAlignment",
       limitType: "D2Limits",
       columnName: ChartTableAttributes.AlignmentLeft,
+      unit: HeaderTableUnitAttributes["AlignmentD2Left"],
     },
     {
       id: "AlignmentD1Right",
@@ -117,6 +129,7 @@ async (dataString) => {
       limitName: "HorizontalAlignment",
       limitType: "D1Limits",
       columnName: ChartTableAttributes.AlignmentRight,
+      unit: HeaderTableUnitAttributes["AlignmentD1Right"],
     },
     {
       id: "AlignmentD1Left",
@@ -125,6 +138,7 @@ async (dataString) => {
       limitName: "HorizontalAlignment",
       limitType: "D1Limits",
       columnName: ChartTableAttributes.AlignmentLeft,
+      unit: HeaderTableUnitAttributes["AlignmentD1Left"],
     },
     {
       id: "TwistBase1",
@@ -132,7 +146,9 @@ async (dataString) => {
       shouldShow: true,
       limitName: "Twist",
       limitType: "",
-      columnName: `${ChartTableAttributes.Twist} ${TwistBaseLength}m`,
+      baseLengthUnit: HeaderTableUnitAttributes["TwistBaseLength"],
+      columnName: `${ChartTableAttributes.Twist} ${TwistBaseLength}${HeaderTableUnitAttributes["TwistBaseLength"]}`,
+      unit: HeaderTableUnitAttributes["Twist"],
     },
     {
       id: "CantDefect",
@@ -141,6 +157,7 @@ async (dataString) => {
       limitName: "Cant",
       limitType: "",
       columnName: ChartTableAttributes.CantDefect,
+      unit: HeaderTableUnitAttributes["CantDefect"],
     },
     {
       id: "Cant",
@@ -149,6 +166,7 @@ async (dataString) => {
       limitName: "Cant",
       limitType: "",
       columnName: ChartTableAttributes.Cant,
+      unit: HeaderTableUnitAttributes["Cant"],
     },
     {
       id: "GaugeDefect",
@@ -157,12 +175,14 @@ async (dataString) => {
       limitName: "Gauge",
       limitType: "",
       columnName: ChartTableAttributes.GaugeDefect,
+      unit: HeaderTableUnitAttributes["GaugeDefect"],
     },
     {
       id: "Localizations",
       shortName: "Localizations",
       shouldShow: true,
       columnName: ChartTableAttributes.LocalizationInformation,
+      unit: HeaderTableUnitAttributes["LocalizationInformation"],
     },
   ];
 
@@ -419,9 +439,9 @@ async (dataString) => {
           lineDashType: "longDash",
           labelBackgroundColor: "transparent",
           color: "#000",
-          label: `${event.MappedStationingStart.toFixed(
-            2
-          )}, ${event.Abbr.toUpperCase()}${event.IsRange ? "\u25BC" : ""}`,
+          label: `${
+            event.ConvertedMappedStationingStart
+          }, ${event.Abbr.toUpperCase()}${event.IsRange ? "\u25BC" : ""}`,
           showOnTop: true,
           labelFontColor: "#000",
           labelFontFamily: "Calibri",
@@ -442,9 +462,9 @@ async (dataString) => {
           lineDashType: "longDash",
           color: "#000",
           labelBackgroundColor: "transparent",
-          label: `${event.MappedStationingEnd.toFixed(
-            2
-          )}, ${event.Abbr.toLowerCase()}\u25B2`,
+          label: `${
+            event.ConvertedMappedStationingEnd
+          }, ${event.Abbr.toLowerCase()}\u25B2`,
           showOnTop: true,
           labelFontColor: "#000",
           labelFontFamily: "Calibri",
@@ -465,9 +485,7 @@ async (dataString) => {
       labelPlacement: "outside",
       lineDashType: "longDashDot",
       color: "#000",
-      label: `${limit.MinSpeed.toFixed(0)}<V<=${limit.MaxSpeed.toFixed(
-        0
-      )} \u25BC`,
+      label: `${limit.ConvertedMinSpeed}<V<=${limit.ConvertedMaxSpeed} \u25BC`,
       showOnTop: true,
       labelBackgroundColor: "transparent",
       labelFontColor: "#5a5a5a",
@@ -481,7 +499,7 @@ async (dataString) => {
   };
 
   const getXAxisDistanceInPixel = (diff) => {
-    return ((Math.abs(diff) * 1000) / LocalizationScale) * mmToPixel;
+    return (Math.abs(diff) / LocalizationScale) * mToPixel;
   };
 
   const generateLabelStripLines = (chartListLength, speedZones) => {
@@ -527,7 +545,8 @@ async (dataString) => {
       labelPlacement: "outside",
       lineDashType: "dot",
       color: "#000",
-      label: chartListLength === 7 ? `${label.MappedStationingPoint}` : "",
+      label:
+        chartListLength === 7 ? `${label.ConvertedMappedStationingPoint}` : "",
       showOnTop: true,
       labelBackgroundColor: "transparent",
       labelFontColor: "#000",
@@ -559,30 +578,35 @@ async (dataString) => {
     row.append(chart);
   };
 
-  const addLabels = (index, columnName) => {
+  const addLabels = (index, param) => {
     if (index === 7) {
       document.querySelector(
         `.${chartContainerClass} .row:nth-of-type(${index + 1}) p`
-      ).innerHTML = `${ChartTableAttributes.LocalizationInformation} [m]`;
+      ).innerHTML = `${param.columnName} [${param.unit}]`;
       return;
     }
-    if (columnName === "Cant Defect") {
+
+    if (param.columnName === "Cant defect") {
       document.querySelector(
         `.${chartContainerClass} .row:nth-of-type(${index + 1}) p`
-      ).innerHTML = `Cant Defect 1:${DefectScale.toFixed(
-        0
-      )} [mm] <br> Cant 1:${SignalScale.toFixed(0)} [mm]`;
+      ).innerHTML = `Cant defect 1:${DefectScale.toFixed(0)} [${
+        param.unit
+      }] <br> Cant 1:${SignalScale.toFixed(0)} [${param.unit}]`;
       return;
     }
-    if (columnName.toLowerCase().includes("twist")) {
+    if (param.columnName.toLowerCase().includes("twist")) {
       document.querySelector(
         `.${chartContainerClass} .row:nth-of-type(${index + 1}) p`
-      ).innerHTML = `${columnName} <br> 1:${DefectScale.toFixed(0)} [mm/m]`;
+      ).innerHTML = `${param.columnName} <br> 1:${DefectScale.toFixed(0)} [${
+        param.unit
+      }/${param?.baseLengthUnit ?? ""}]`;
       return;
     }
     document.querySelector(
       `.${chartContainerClass} .row:nth-of-type(${index + 1}) p`
-    ).innerHTML = `${columnName} <br> 1:${DefectScale.toFixed(0)} [mm]`;
+    ).innerHTML = `${param.columnName} <br> 1:${DefectScale.toFixed(0)} [${
+      param.unit
+    }]`;
   };
 
   const distanceBetweenYAxisPointsInPixels = (
@@ -591,32 +615,31 @@ async (dataString) => {
   ) => {
     return (
       (Math.abs(higherPriorityLimit - lowerPriorityLimit) / DefectScale) *
-      mmToPixel
+      mToPixel
     );
   };
 
   const generateYAxisLabels = (limits) => {
     const upper = [];
     const lower = [];
-    const pixelAdjustment = 13;
     limits?.[0]?.LimitsBySeverity.forEach((limit) => {
-      upper.push(limit.Upper);
-      lower.push(limit.Lower);
+      upper.push({ value: limit.Upper, label: limit.ConvertedUpper });
+      lower.push({ value: limit.Lower, label: limit.ConvertedLower });
     });
     const indicesToRemoveFromUpper = [];
     const indicesToRemoveFromLower = [];
     const minOverlapLengthInPixels = 18;
     for (let i = 1; i < upper.length; i++) {
       let upperHeight = distanceBetweenYAxisPointsInPixels(
-        upper[i],
-        upper[i - 1]
+        upper[i].value,
+        upper[i - 1].value
       );
       if (upperHeight < minOverlapLengthInPixels) {
         indicesToRemoveFromUpper.push(i - 1);
       }
       let lowerHeight = distanceBetweenYAxisPointsInPixels(
-        lower[i],
-        lower[i - 1]
+        lower[i].value,
+        lower[i - 1].value
       );
       if (lowerHeight < minOverlapLengthInPixels) {
         indicesToRemoveFromLower.push(i - 1);
@@ -630,8 +653,8 @@ async (dataString) => {
     );
     const shouldShowLabelForZero = () => {
       let shouldShow = true;
-      const closestLowerLabelToZero = lowerLabels[0];
-      const closestUpperLabelToZero = upperLabels[0];
+      const closestLowerLabelToZero = lowerLabels[0].value;
+      const closestUpperLabelToZero = upperLabels[0].value;
       if (
         distanceBetweenYAxisPointsInPixels(closestLowerLabelToZero, 0) <
           minOverlapLengthInPixels ||
@@ -644,13 +667,15 @@ async (dataString) => {
     };
     const allLabels = [...lowerLabels, ...upperLabels];
     if (shouldShowLabelForZero()) {
-      allLabels.push(0);
+      allLabels.push({ value: 0, label: 0 });
     }
     if (
       allLabels.length === 2 &&
       !allLabels.includes(0) &&
-      distanceBetweenYAxisPointsInPixels(allLabels[1], allLabels[0]) <
-        minOverlapLengthInPixels
+      distanceBetweenYAxisPointsInPixels(
+        allLabels[1].value,
+        allLabels[0].value
+      ) < minOverlapLengthInPixels
     ) {
       allLabels.splice(0, 1);
     }
@@ -867,6 +892,8 @@ async (dataString) => {
       value: limit.StationingStart,
       MinSpeed: limit.MinSpeed,
       MaxSpeed: limit.MaxSpeed,
+      ConvertedMinSpeed: limit.ConvertedMinSpeed,
+      ConvertedMaxSpeed: limit.ConvertedMaxSpeed,
     }));
     let labelStripLines = [];
     let continuousLocalizationPoints = [];
@@ -876,9 +903,11 @@ async (dataString) => {
         const limits = configureThresholdLimits(param);
         const yAxisLabels =
           param.id === "Localizations" ? [] : generateYAxisLabels(limits);
-        const showReferenceLineLabel = yAxisLabels.includes(0);
+        const showReferenceLineLabel = yAxisLabels.some(
+          (yAxisLabel) => yAxisLabel.value === 0
+        );
         if (!showReferenceLineLabel && param.id !== "Localizations") {
-          yAxisLabels.push(0);
+          yAxisLabels.push({ value: 0, label: 0 });
         }
         let [lineChartDataPoints, areaChartData, minY, maxY] =
           dataPointGenerator(value, limits);
@@ -896,11 +925,11 @@ async (dataString) => {
         if (maxY === 0) {
           maxY = 2;
         }
-        const amplitude = (Math.abs(maxY) / DefectScale) * mmToPixel;
+        const amplitude = (Math.abs(maxY) / DefectScale) * mToPixel;
         let thresholdDataSet = [];
         thresholdDataSet = generateThresholdStriplines(limits);
         labelStripLines = generateLabelStripLines(chartList.length, speedZones);
-        let height = (Math.abs(maxY - minY) / DefectScale) * mmToPixel + 13;
+        let height = (Math.abs(maxY - minY) / DefectScale) * mToPixel + 13;
         if (height < 20 || height === Infinity) {
           height = 20;
         }
@@ -918,6 +947,20 @@ async (dataString) => {
             default:
               return 0;
           }
+        };
+        const convertedLocalizationValue = (val) => {
+          return (ConvertedMeasuredStationingStart / StationingStart) * val;
+        };
+        const convertedLimitValue = (val) => {
+          let converter;
+          limits[0].LimitsBySeverity.forEach((limitData) => {
+            if (limitData.Upper !== 0 && converter == null) {
+              converter = (limitData.ConvertedUpper / limitData.Upper).toFixed(
+                0
+              );
+            }
+          });
+          return converter * val;
         };
         const getPeakMeanAndLength = (areaChartData) => {
           const allData = [];
@@ -941,8 +984,8 @@ async (dataString) => {
             );
             const currentLengthData = {
               x: xValue,
-              y: isMaxPeak ? -3 : 3,
-              indexLabel: diff.toFixed(1),
+              y: isMaxPeak ? -0.003 : 0.003,
+              indexLabel: convertedLocalizationValue(diff).toFixed(1),
               indexLabelOrientation: "horizontal",
               indexLabelFontSize: 8,
               indexLabelFontWeight: "bolder",
@@ -965,8 +1008,12 @@ async (dataString) => {
             lengthAndPeakData.push({
               x: areaData.dataPoints[Math.ceil(areaData.dataPoints.length / 2)]
                 .x,
-              y: isMaxPeak ? 5 : -5,
-              indexLabel: Math.abs(isMaxPeak ? maxY : minY).toFixed(1),
+              y: isMaxPeak ? 0.005 : -0.005,
+              indexLabel: Math.abs(
+                isMaxPeak
+                  ? convertedLimitValue(maxY)
+                  : convertedLimitValue(minY)
+              ).toFixed(1),
               indexLabelOrientation: "vertical",
               indexLabelFontSize: 8,
               indexLabelFontWeight: "bolder",
@@ -1066,21 +1113,22 @@ async (dataString) => {
             lineThickness: 0,
             gridThickness: 0,
             tickLength: 0,
-            maximum: maxY + 1,
-            minimum: minY - (height < 40 ? (DefectScale > 8 ? 8 : 5) : 2),
+            maximum: maxY + 0.001,
+            minimum:
+              minY - (height < 40 ? (DefectScale > 8 ? 0.008 : 0.005) : 0.002),
             labelFormatter: () => "",
             labelAutoFit: true,
             labelFontSize: 11,
-            stripLines: yAxisLabels.map((yAxisLabel, index) => ({
-              value: yAxisLabel,
+            stripLines: yAxisLabels.map((yAxisLabel) => ({
+              value: yAxisLabel.value,
               labelAutoFit: true,
               labelPlacement: "outside",
               lineDashType: "solid",
-              color: yAxisLabel === 0 ? "#000" : "transparent",
+              color: yAxisLabel.value === 0 ? "#000" : "transparent",
               label:
-                !showReferenceLineLabel && yAxisLabel === 0
+                !showReferenceLineLabel && yAxisLabel.value === 0
                   ? ""
-                  : yAxisLabel.toString(),
+                  : yAxisLabel.label.toString(),
               showOnTop: true,
               labelFontColor: "#000",
               labelFontFamily: "Calibri",
@@ -1130,13 +1178,13 @@ async (dataString) => {
             lineColor: "black",
             lineThickness: 0.8,
           });
-          const cantDataMax = cantData[3] + 1;
-          const cantDataMin = cantData[2] - 1;
+          const cantDataMax = cantData[3] + 0.001;
+          const cantDataMin = cantData[2] - 0.001;
           const prevMax = chartList[chartList.length - 1].axisY.maximum;
           const prevMin = chartList[chartList.length - 1].axisY.minimum;
           const newMax = Math.max(prevMax, cantDataMax);
           const newMin = Math.min(prevMin, cantDataMin);
-          height = (Math.abs(newMax - newMin) / DefectScale) * mmToPixel + 13;
+          height = (Math.abs(newMax - newMin) / DefectScale) * mToPixel + 13;
           chartList[chartList.length - 1].axisY.maximum = newMax;
           chartList[chartList.length - 1].axisY.minimum = newMin;
           chartList[chartList.length - 1].height = height;
@@ -1152,7 +1200,7 @@ async (dataString) => {
           },
         };
         generateChartElement(index, param.columnName);
-        addLabels(index, param.columnName);
+        addLabels(index, param);
         document.querySelector(
           `.${chartContainerClass} .chart-${index + 1}`
         ).style.width = `${PageWidth - 1}px`;
