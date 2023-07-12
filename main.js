@@ -13,7 +13,7 @@ async (dataString) => {
     SignalScale,
     DisplayEvents,
     SeverityLimits: chartThresholds,
-    TwistBaseLength,
+    ConvertedTwistBaseLength,
     LocalizationScale,
     StationingLabels,
     LocalizedAttributes,
@@ -147,7 +147,7 @@ async (dataString) => {
       limitName: "Twist",
       limitType: "",
       baseLengthUnit: HeaderTableUnitAttributes["TwistBaseLength"],
-      columnName: `${ChartTableAttributes.Twist} ${TwistBaseLength}${HeaderTableUnitAttributes["TwistBaseLength"]}`,
+      columnName: `${ChartTableAttributes.Twist} ${ConvertedTwistBaseLength}${HeaderTableUnitAttributes["BaseLength"]}`,
       unit: HeaderTableUnitAttributes["Twist"],
     },
     {
@@ -949,15 +949,26 @@ async (dataString) => {
           }
         };
         const convertedLocalizationValue = (val) => {
-          return (ConvertedMeasuredStationingStart / StationingStart) * val;
+          const stationingWithoutZero = VisualTrackDatas.find(
+            (data) =>
+              data.Stationing.Value !== 0 &&
+              data.Stationing.ConvertedValue !== 0
+          );
+          return (
+            (stationingWithoutZero.Stationing.ConvertedValue /
+              stationingWithoutZero.Stationing.Value) *
+            val
+          );
         };
         const convertedLimitValue = (val) => {
           let converter;
           limits[0].LimitsBySeverity.forEach((limitData) => {
-            if (limitData.Upper !== 0 && converter == null) {
-              converter = (limitData.ConvertedUpper / limitData.Upper).toFixed(
-                0
-              );
+            if (
+              limitData.Upper !== 0 &&
+              limitData.ConvertedUpper !== 0 &&
+              converter == null
+            ) {
+              converter = limitData.ConvertedUpper / limitData.Upper;
             }
           });
           return converter * val;
