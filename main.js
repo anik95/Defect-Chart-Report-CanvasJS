@@ -146,7 +146,7 @@ async (dataString) => {
       shouldShow: true,
       limitName: "Twist",
       limitType: "",
-      baseLengthUnit: HeaderTableUnitAttributes["TwistBaseLength"],
+      baseLengthUnit: HeaderTableUnitAttributes["BaseLength"],
       columnName: `${ChartTableAttributes.Twist} ${ConvertedTwistBaseLength}${HeaderTableUnitAttributes["BaseLength"]}`,
       unit: HeaderTableUnitAttributes["Twist"],
     },
@@ -551,7 +551,6 @@ async (dataString) => {
       labelBackgroundColor: "transparent",
       labelFontColor: "#000",
       labelFontFamily: "Calibri",
-      labelWrap: false,
       labelAlign: "near",
       labelAngle: 270,
       labelMaxWidth: 90,
@@ -622,6 +621,9 @@ async (dataString) => {
   const generateYAxisLabels = (limits) => {
     const upper = [];
     const lower = [];
+    if (!limits?.[0]?.LimitsBySeverity?.length) {
+      return [{ value: 0, label: 0 }];
+    }
     limits?.[0]?.LimitsBySeverity.forEach((limit) => {
       upper.push({ value: limit.Upper, label: limit.ConvertedUpper });
       lower.push({ value: limit.Lower, label: limit.ConvertedLower });
@@ -653,8 +655,8 @@ async (dataString) => {
     );
     const shouldShowLabelForZero = () => {
       let shouldShow = true;
-      const closestLowerLabelToZero = lowerLabels[0].value;
-      const closestUpperLabelToZero = upperLabels[0].value;
+      const closestLowerLabelToZero = lowerLabels?.[0]?.value;
+      const closestUpperLabelToZero = upperLabels?.[0]?.value;
       if (
         distanceBetweenYAxisPointsInPixels(closestLowerLabelToZero, 0) <
           minOverlapLengthInPixels ||
@@ -693,7 +695,7 @@ async (dataString) => {
       row.ParameterValues.forEach((cell) => {
         if (!newChartData[cell.Id]) newChartData[cell.Id] = [];
         newChartData[cell.Id].push({
-          x: row.Stationing.Value,
+          x: row.StationingMeasured.Value,
           y: cell.Id !== "Cant" ? cell.Value : cell.Value / SignalScale,
         });
       });
@@ -951,12 +953,12 @@ async (dataString) => {
         const convertedLocalizationValue = (val) => {
           const stationingWithoutZero = VisualTrackDatas.find(
             (data) =>
-              data.Stationing.Value !== 0 &&
-              data.Stationing.ConvertedValue !== 0
+              data.StationingMeasured.Value !== 0 &&
+              data.StationingMeasured.ConvertedValue !== 0
           );
           return (
-            (stationingWithoutZero.Stationing.ConvertedValue /
-              stationingWithoutZero.Stationing.Value) *
+            (stationingWithoutZero.StationingMeasured.ConvertedValue /
+              stationingWithoutZero.StationingMeasured.Value) *
             val
           );
         };
@@ -971,6 +973,7 @@ async (dataString) => {
               converter = limitData.ConvertedUpper / limitData.Upper;
             }
           });
+          if (converter == null) converter = 1;
           return converter * val;
         };
         const getPeakMeanAndLength = (areaChartData) => {
