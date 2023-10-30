@@ -6,14 +6,12 @@ async (dataString) => {
     Events: events,
     MeasuredStationingStart: StationingStart,
     MeasuredStationingEnd: StationingEnd,
-    ConvertedMeasuredStationingStart,
     PageWidth,
-    PageHeight,
     DefectScale,
     SignalScale,
     DisplayEvents,
     SeverityLimits: chartThresholds,
-    ConvertedTwistBaseLength,
+    TwistBaseLength,
     LocalizationScale,
     StationingLabels,
     LocalizedAttributes,
@@ -25,7 +23,8 @@ async (dataString) => {
   const chartContainerWrapper = document.createElement("div");
   chartContainerWrapper.classList.add("chartContainerWrapper");
   const chartContainer = document.createElement("div");
-  const chartContainerClass = "chartContainer" + StationingStart.toFixed(0);
+  const chartContainerClass =
+    "chartContainer" + StationingStart.OriginalValue.toFixed(0);
   chartContainer.classList.add("chartContainer");
   chartContainer.classList.add(chartContainerClass);
   chartContainerWrapper.append(chartContainer);
@@ -147,7 +146,7 @@ async (dataString) => {
       limitName: "Twist",
       limitType: "",
       baseLengthUnit: HeaderTableUnitAttributes["BaseLength"],
-      columnName: `${ChartTableAttributes.Twist} ${ConvertedTwistBaseLength}${HeaderTableUnitAttributes["BaseLength"]}`,
+      columnName: `${ChartTableAttributes.Twist} ${TwistBaseLength.FormattedReportValue}${HeaderTableUnitAttributes["BaseLength"]}`,
       unit: HeaderTableUnitAttributes["Twist"],
     },
     {
@@ -248,11 +247,11 @@ async (dataString) => {
     let currentThresholdIndex = 0;
     let minY = Math.min(
       values?.[0]?.y || Infinity,
-      limits[0]?.LimitsBySeverity?.[2]?.Lower || Infinity
+      limits[0]?.LimitsBySeverity?.[2]?.Lower.OriginalValue || Infinity
     );
     maxY = Math.max(
       values?.[0]?.y || -Infinity,
-      limits[0]?.LimitsBySeverity?.[2]?.Upper || -Infinity
+      limits[0]?.LimitsBySeverity?.[2]?.Upper.OriginalValue || -Infinity
     );
     values?.forEach((value) => {
       if (
@@ -262,17 +261,19 @@ async (dataString) => {
         return;
       }
       let currentChartThreshold = limits[currentThresholdIndex];
-      if (value.x > currentChartThreshold?.StationingEnd) {
+      if (value.x > currentChartThreshold?.StationingEnd.OriginalValue) {
         if (currentThresholdIndex + 1 < limits.length) {
           currentThresholdIndex += 1;
           currentChartThreshold = limits[currentThresholdIndex];
           minY = Math.min(
             minY,
-            currentChartThreshold?.LimitsBySeverity?.[2]?.Lower || minY
+            currentChartThreshold?.LimitsBySeverity?.[2]?.Lower.OriginalValue ||
+              minY
           );
           maxY = Math.max(
             maxY,
-            currentChartThreshold?.LimitsBySeverity?.[2]?.Upper || maxY
+            currentChartThreshold?.LimitsBySeverity?.[2]?.Upper.OriginalValue ||
+              maxY
           );
         } else {
           lineChartDataPoints.push({ ...value });
@@ -286,41 +287,55 @@ async (dataString) => {
           return;
         }
       }
-      if (value.y > currentChartThreshold?.LimitsBySeverity?.[2]?.Upper) {
+      if (
+        value.y >
+        currentChartThreshold?.LimitsBySeverity?.[2]?.Upper.OriginalValue
+      ) {
         lineChartDataPoints.push({ ...value });
         addAreaCharDataPoint(value, areaChartData, "#E40D3B", "IAL");
       } else if (
-        value.y > currentChartThreshold?.LimitsBySeverity?.[1]?.Upper &&
-        value.y < currentChartThreshold?.LimitsBySeverity?.[2]?.Upper
+        value.y >
+          currentChartThreshold?.LimitsBySeverity?.[1]?.Upper.OriginalValue &&
+        value.y <
+          currentChartThreshold?.LimitsBySeverity?.[2]?.Upper.OriginalValue
       ) {
         lineChartDataPoints.push({ ...value });
         addAreaCharDataPoint(value, areaChartData, "#FF9B31", "IL");
       } else if (
-        value.y > currentChartThreshold?.LimitsBySeverity?.[0]?.Upper &&
-        value.y < currentChartThreshold?.LimitsBySeverity?.[1]?.Upper
+        value.y >
+          currentChartThreshold?.LimitsBySeverity?.[0]?.Upper.OriginalValue &&
+        value.y <
+          currentChartThreshold?.LimitsBySeverity?.[1]?.Upper.OriginalValue
       ) {
         lineChartDataPoints.push({ ...value });
         addAreaCharDataPoint(value, areaChartData, "#FFEF35", "AL");
       } else if (
-        value.y < currentChartThreshold?.LimitsBySeverity?.[0]?.Upper &&
-        value.y > currentChartThreshold?.LimitsBySeverity?.[0]?.Lower
+        value.y <
+          currentChartThreshold?.LimitsBySeverity?.[0]?.Upper.OriginalValue &&
+        value.y >
+          currentChartThreshold?.LimitsBySeverity?.[0]?.Lower.OriginalValue
       ) {
         lineChartDataPoints.push({ ...value });
         addAreaCharDataPoint(value, areaChartData, "transparent");
       } else if (
-        value.y < currentChartThreshold?.LimitsBySeverity?.[0]?.Lower &&
-        value.y > currentChartThreshold?.LimitsBySeverity?.[1]?.Lower
+        value.y <
+          currentChartThreshold?.LimitsBySeverity?.[0]?.Lower.OriginalValue &&
+        value.y >
+          currentChartThreshold?.LimitsBySeverity?.[1]?.Lower.OriginalValue
       ) {
         lineChartDataPoints.push({ ...value });
         addAreaCharDataPoint(value, areaChartData, "#FFEF35", "AL");
       } else if (
-        value.y < currentChartThreshold?.LimitsBySeverity?.[1]?.Lower &&
-        value.y > currentChartThreshold?.LimitsBySeverity?.[2]?.Lower
+        value.y <
+          currentChartThreshold?.LimitsBySeverity?.[1]?.Lower.OriginalValue &&
+        value.y >
+          currentChartThreshold?.LimitsBySeverity?.[2]?.Lower.OriginalValue
       ) {
         lineChartDataPoints.push({ ...value });
         addAreaCharDataPoint(value, areaChartData, "#FF9B31", "IL");
       } else if (
-        value.y < currentChartThreshold?.LimitsBySeverity?.[2]?.Lower
+        value.y <
+        currentChartThreshold?.LimitsBySeverity?.[2]?.Lower.OriginalValue
       ) {
         lineChartDataPoints.push({ ...value });
         addAreaCharDataPoint(value, areaChartData, "#E40D3B", "IAL");
@@ -389,23 +404,24 @@ async (dataString) => {
       });
     };
     for (const limit of limits) {
-      if (limit.StationingStart > StationingEnd) break;
+      if (limit.StationingStart.OriginalValue > StationingEnd.OriginalValue)
+        break;
       if (
-        limit.StationingStart <= StationingEnd &&
-        limit.StationingEnd > StationingStart
+        limit.StationingStart.OriginalValue <= StationingEnd.OriginalValue &&
+        limit.StationingEnd.OriginalValue > StationingStart.OriginalValue
       ) {
         limit.LimitsBySeverity.forEach((element, index) => {
           const lineColor = getLineColor(index);
           addToThresholdData(
-            limit.StationingStart,
-            limit.StationingEnd,
-            element.Lower,
+            limit.StationingStart.OriginalValue,
+            limit.StationingEnd.OriginalValue,
+            element.Lower.OriginalValue,
             lineColor
           );
           addToThresholdData(
-            limit.StationingStart,
-            limit.StationingEnd,
-            element.Upper,
+            limit.StationingStart.OriginalValue,
+            limit.StationingEnd.OriginalValue,
+            element.Upper.OriginalValue,
             lineColor
           );
         });
@@ -432,15 +448,17 @@ async (dataString) => {
       return overlaps;
     };
     events?.forEach((event) => {
-      if (!checkEventSpeedZoneOverlap(event.MeasuredStationingStart)) {
+      if (
+        !checkEventSpeedZoneOverlap(event.MeasuredStationingStart.OriginalValue)
+      ) {
         eventStripLines.push({
-          value: event.MeasuredStationingStart,
+          value: event.MeasuredStationingStart.OriginalValue,
           labelPlacement: "outside",
           lineDashType: "longDash",
           labelBackgroundColor: "transparent",
           color: "#000",
           label: `${
-            event.ConvertedMappedStationingStart
+            event.MappedStationingStart.FormattedReportValue
           }, ${event.Abbr.toUpperCase()}${event.IsRange ? "\u25BC" : ""}`,
           showOnTop: true,
           labelFontColor: "#000",
@@ -454,16 +472,16 @@ async (dataString) => {
       }
       if (
         event.IsRange &&
-        !checkEventSpeedZoneOverlap(event.MeasuredStationingEnd)
+        !checkEventSpeedZoneOverlap(event.MeasuredStationingEnd.OriginalValue)
       ) {
         eventStripLines.push({
-          value: event.MeasuredStationingEnd,
+          value: event.MeasuredStationingEnd.OriginalValue,
           labelPlacement: "outside",
           lineDashType: "longDash",
           color: "#000",
           labelBackgroundColor: "transparent",
           label: `${
-            event.ConvertedMappedStationingEnd
+            event.MappedStationingEnd.FormattedReportValue
           }, ${event.Abbr.toLowerCase()}\u25B2`,
           showOnTop: true,
           labelFontColor: "#000",
@@ -522,7 +540,7 @@ async (dataString) => {
       eventLocalizations.forEach((event) => {
         if (
           getXAxisDistanceInPixel(
-            Math.abs(event - label.MeasuredStationingPoint)
+            Math.abs(event - label.MeasuredStationingPoint.OriginalValue)
           ) < minDistanceForOverlapForLines
         ) {
           overlapsWithEvent = true;
@@ -531,7 +549,7 @@ async (dataString) => {
       speedZoneLocalizations.forEach((speedZone) => {
         if (
           getXAxisDistanceInPixel(
-            Math.abs(speedZone - label.MeasuredStationingPoint)
+            Math.abs(speedZone - label.MeasuredStationingPoint.OriginalValue)
           ) < minDistanceForOverlapForLines
         ) {
           overlapsWithSpeedZone = true;
@@ -541,12 +559,14 @@ async (dataString) => {
     });
 
     return filteredStationingLabels.map((label) => ({
-      value: label.MeasuredStationingPoint,
+      value: label.MeasuredStationingPoint.OriginalValue,
       labelPlacement: "outside",
       lineDashType: "dot",
       color: "#000",
       label:
-        chartListLength === 7 ? `${label.ConvertedMappedStationingPoint}` : "",
+        chartListLength === 7
+          ? `${label.MappedStationingPoint.FormattedReportValue}`
+          : "",
       showOnTop: true,
       labelBackgroundColor: "transparent",
       labelFontColor: "#000",
@@ -573,7 +593,10 @@ async (dataString) => {
     const chart = document.createElement("div");
     chart.classList.add("chart");
     chart.classList.add(`chart-${index + 1}`);
-    chart.setAttribute("id", `chart-${index + 1}${StationingStart.toFixed(0)}`);
+    chart.setAttribute(
+      "id",
+      `chart-${index + 1}${StationingStart.OriginalValue.toFixed(0)}`
+    );
     row.append(chart);
   };
 
@@ -625,8 +648,14 @@ async (dataString) => {
       return [{ value: 0, label: 0 }];
     }
     limits?.[0]?.LimitsBySeverity.forEach((limit) => {
-      upper.push({ value: limit.Upper, label: limit.ConvertedUpper });
-      lower.push({ value: limit.Lower, label: limit.ConvertedLower });
+      upper.push({
+        value: limit.Upper.OriginalValue,
+        label: limit.Upper.FormattedReportValue,
+      });
+      lower.push({
+        value: limit.Lower.OriginalValue,
+        label: limit.Lower.FormattedReportValue,
+      });
     });
     const indicesToRemoveFromUpper = [];
     const indicesToRemoveFromLower = [];
@@ -695,8 +724,11 @@ async (dataString) => {
       row.ParameterValues.forEach((cell) => {
         if (!newChartData[cell.Id]) newChartData[cell.Id] = [];
         newChartData[cell.Id].push({
-          x: row.StationingMeasured.Value,
-          y: cell.Id !== "Cant" ? cell.Value : cell.Value / SignalScale,
+          x: row.StationingMeasured.Value.OriginalValue,
+          y:
+            cell.Id !== "Cant"
+              ? cell.Value.OriginalValue
+              : cell.Value.OriginalValue / SignalScale,
         });
       });
     });
@@ -763,8 +795,8 @@ async (dataString) => {
       height: 1072,
       backgroundColor: "transparent",
       axisX2: {
-        minimum: StationingStart - 0.2 * widthRatio,
-        maximum: StationingEnd + 0.2 * widthRatio,
+        minimum: StationingStart.OriginalValue - 0.2 * widthRatio,
+        maximum: StationingEnd.OriginalValue + 0.2 * widthRatio,
         lineThickness: 0,
         gridThickness: 0,
         tickLength: 0,
@@ -791,8 +823,8 @@ async (dataString) => {
         labelFontSize: 11,
       },
       axisX: {
-        minimum: StationingStart - 0.2 * widthRatio,
-        maximum: StationingEnd + 0.2 * widthRatio,
+        minimum: StationingStart.OriginalValue - 0.2 * widthRatio,
+        maximum: StationingEnd.OriginalValue + 0.2 * widthRatio,
         tickLength: 0,
         labelAutoFit: true,
         labelWrap: false,
@@ -864,7 +896,7 @@ async (dataString) => {
     };
     //render events chart
     const continuousEventsStockChart = new CanvasJS.StockChart(
-      `chart-${eventIndex + 1}${StationingStart.toFixed(0)}`,
+      `chart-${eventIndex + 1}${StationingStart.OriginalValue.toFixed(0)}`,
       continuousChartOptionsWithEvents
     );
     continuousEventsStockChart.render();
@@ -876,13 +908,15 @@ async (dataString) => {
     );
     //render speedzone chart
     const continuousSpeedZoneStockChart = new CanvasJS.StockChart(
-      `chart-${speedZoneIndex + 1}${StationingStart.toFixed(0)}`,
+      `chart-${speedZoneIndex + 1}${StationingStart.OriginalValue.toFixed(0)}`,
       continuousChartOptionsWithSpeedZones
     );
     continuousSpeedZoneStockChart.render();
     //render localization labeels chart
     const continuousLocalizationLabelStockChart = new CanvasJS.StockChart(
-      `chart-${localizationLabelIndex + 1}${StationingStart.toFixed(0)}`,
+      `chart-${
+        localizationLabelIndex + 1
+      }${StationingStart.OriginalValue.toFixed(0)}`,
       continuousChartOptionsWithLocalizationLabels
     );
     continuousLocalizationLabelStockChart.render();
@@ -891,11 +925,11 @@ async (dataString) => {
     let index = 0;
     const chartList = [];
     const speedZones = chartThresholds.Gauge.Limits.map((limit) => ({
-      value: limit.StationingStart,
-      MinSpeed: limit.MinSpeed,
-      MaxSpeed: limit.MaxSpeed,
-      ConvertedMinSpeed: limit.ConvertedMinSpeed,
-      ConvertedMaxSpeed: limit.ConvertedMaxSpeed,
+      value: limit.StationingStart.OriginalValue,
+      MinSpeed: limit.MinSpeed.OriginalValue,
+      MaxSpeed: limit.MaxSpeed.OriginalValue,
+      ConvertedMinSpeed: limit.MinSpeed.FormattedReportValue,
+      ConvertedMaxSpeed: limit.MaxSpeed.FormattedReportValue,
     }));
     let labelStripLines = [];
     let continuousLocalizationPoints = [];
@@ -953,12 +987,12 @@ async (dataString) => {
         const convertedLocalizationValue = (val) => {
           const stationingWithoutZero = VisualTrackDatas.find(
             (data) =>
-              data.StationingMeasured.Value !== 0 &&
-              data.StationingMeasured.ConvertedValue !== 0
+              data.StationingMeasured.Value.OriginalValue !== 0 &&
+              data.StationingMeasured.Value.ReportValue !== 0
           );
           return (
-            (stationingWithoutZero.StationingMeasured.ConvertedValue /
-              stationingWithoutZero.StationingMeasured.Value) *
+            (stationingWithoutZero.StationingMeasured.Value.ReportValue /
+              stationingWithoutZero.StationingMeasured.Value.OriginalValue) *
             val
           );
         };
@@ -966,11 +1000,12 @@ async (dataString) => {
           let converter;
           limits[0].LimitsBySeverity.forEach((limitData) => {
             if (
-              limitData.Upper !== 0 &&
-              limitData.ConvertedUpper !== 0 &&
+              limitData.Upper.OriginalValue !== 0 &&
+              limitData.Upper.ReportValue !== 0 &&
               converter == null
             ) {
-              converter = limitData.ConvertedUpper / limitData.Upper;
+              converter =
+                limitData.Upper.ReportValue / limitData.Upper.OriginalValue;
             }
           });
           if (converter == null) converter = 1;
@@ -1104,8 +1139,8 @@ async (dataString) => {
           backgroundColor:
             chartList.length % 2 === 0 ? "#efefef" : "transparent",
           axisX2: {
-            minimum: StationingStart - 0.2 * widthRatio,
-            maximum: StationingEnd + 0.2 * widthRatio,
+            minimum: StationingStart.OriginalValue - 0.2 * widthRatio,
+            maximum: StationingEnd.OriginalValue + 0.2 * widthRatio,
             lineThickness: 0,
             gridThickness: 0,
             tickLength: 0,
@@ -1142,7 +1177,7 @@ async (dataString) => {
               label:
                 !showReferenceLineLabel && yAxisLabel.value === 0
                   ? ""
-                  : yAxisLabel.label.toString(),
+                  : yAxisLabel.label,
               showOnTop: true,
               labelFontColor: "#000",
               labelFontFamily: "Calibri",
@@ -1154,8 +1189,8 @@ async (dataString) => {
             })),
           },
           axisX: {
-            minimum: StationingStart - 0.2 * widthRatio,
-            maximum: StationingEnd + 0.2 * widthRatio,
+            minimum: StationingStart.OriginalValue - 0.2 * widthRatio,
+            maximum: StationingEnd.OriginalValue + 0.2 * widthRatio,
             tickLength: 0,
             labelAutoFit: true,
             labelWrap: false,
@@ -1222,7 +1257,7 @@ async (dataString) => {
           `.${chartContainerClass} .chart-${index + 1}`
         ).style.height = `${height}px`;
         const stockChart = new CanvasJS.StockChart(
-          `chart-${index + 1}${StationingStart.toFixed(0)}`,
+          `chart-${index + 1}${StationingStart.OriginalValue.toFixed(0)}`,
           options
         );
         const referenceLineInTopHalf = (halfOfColumnHeight) => {
