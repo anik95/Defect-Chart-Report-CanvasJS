@@ -105780,7 +105780,7 @@ const chartReport = (dataString) => {
       limitName: "Twist",
       limitType: "",
       baseLengthUnit: HeaderTableUnitAttributes["BaseLength"],
-      columnName: `${ChartTableAttributes.Twist} ${TwistBaseLength.ReportValue}${HeaderTableUnitAttributes["BaseLength"]}`,
+      columnName: `${ChartTableAttributes.Twist} ${TwistBaseLength.ReportValue} ${HeaderTableUnitAttributes["BaseLength"]}`,
       unit: HeaderTableUnitAttributes["Twist"],
     },
     {
