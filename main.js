@@ -511,7 +511,7 @@ async (dataString) => {
       labelAlign: "near",
       labelAngle: 270,
       labelFontSize: 10,
-      labelMaxWidth: 70,
+      labelMaxWidth: 90,
       labelWrap: true,
     }));
   };
