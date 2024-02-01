@@ -16,6 +16,7 @@ async (dataString) => {
     StationingLabels,
     LocalizedAttributes,
     HeaderTableUnitAttributes,
+    UnitConfigurations,
   } = parsedData;
   const widthRatio = LocalizationScale / 100;
   const mToPixel = 3.78 * 1000;
@@ -984,7 +985,10 @@ async (dataString) => {
               return 0;
           }
         };
-        const convertedLocalizationValue = (val) => {
+        const convertedLocalizationValue = (val, convertLocalizationFromDB) => {
+          if (convertLocalizationFromDB != null) {
+            return val * convertLocalizationFromDB;
+          }
           const stationingWithoutZero = VisualTrackDatas.find(
             (data) =>
               data.StationingMeasured.Value.OriginalValue !== 0 &&
@@ -996,7 +1000,10 @@ async (dataString) => {
             val
           );
         };
-        const convertedLimitValue = (val) => {
+        const convertedLimitValue = (val, convertSignalFromDB) => {
+          if (convertSignalFromDB != null) {
+            return convertSignalFromDB * val;
+          }
           let converter;
           limits[0].LimitsBySeverity.forEach((limitData) => {
             if (
@@ -1011,9 +1018,37 @@ async (dataString) => {
           if (converter == null) converter = 1;
           return converter * val;
         };
-        const getPeakMeanAndLength = (areaChartData) => {
+        const getMinPixelsForLengthOverlap = (decimals) => {
+          switch (decimals) {
+            case 1:
+              return 20;
+            case 2:
+              return 30;
+            case 3:
+              return 40;
+            case 4:
+              return 50;
+            case 5:
+              return 60;
+            case 6:
+              return 70;
+            case 7:
+              return 80;
+            case 8:
+              return 90;
+          }
+        };
+        const getPeakMeanAndLength = (areaChartData, unitData) => {
+          const {
+            localizationDecimals,
+            convertLocalizationFromDB,
+            convertSignalFromDB,
+            signalDecimals,
+          } = unitData;
           const allData = [];
-          let minPixelsForLengthOverlap = 16;
+          let minPixelsForLengthOverlap = getMinPixelsForLengthOverlap(
+            unitData?.localizationDecimals ?? 8
+          );
           areaChartData.forEach((areaData, index) => {
             if (areaData.dataPoints.length <= 1 || areaData.severityFlag === "")
               return;
@@ -1034,9 +1069,12 @@ async (dataString) => {
             const currentLengthData = {
               x: xValue,
               y: isMaxPeak ? -0.003 : 0.003,
-              indexLabel: convertedLocalizationValue(diff).toFixed(1),
+              indexLabel: convertedLocalizationValue(
+                diff,
+                convertLocalizationFromDB
+              ).toFixed(localizationDecimals ?? 1),
               indexLabelOrientation: "horizontal",
-              indexLabelFontSize: 8,
+              indexLabelFontSize: 6,
               indexLabelFontWeight: "bolder",
               indexLabelBackgroundColor: "transparent",
               priority,
@@ -1060,13 +1098,16 @@ async (dataString) => {
               y: isMaxPeak ? 0.005 : -0.005,
               indexLabel: Math.abs(
                 isMaxPeak
-                  ? convertedLimitValue(maxY)
-                  : convertedLimitValue(minY)
-              ).toFixed(1),
+                  ? convertedLimitValue(maxY, convertSignalFromDB)
+                  : convertedLimitValue(minY, convertSignalFromDB)
+              ).toFixed(signalDecimals ?? 1),
               indexLabelOrientation: "vertical",
-              indexLabelFontSize: 8,
+              indexLabelFontSize: 6,
               indexLabelFontWeight: "bolder",
               indexLabelBackgroundColor: "transparent",
+              indexLabelPlacement: "outside",
+              indexLabelWrap: false,
+              indexLabelMaxWidth: 100,
               priority,
             });
             const handleLengthOverlap = (currlengthPeak) => {
@@ -1111,6 +1152,22 @@ async (dataString) => {
                   currlengthPeak[1].indexLabelFontColor = "transparent";
                 }
               }
+              //check if x coordinates for length overlaps with x coordinate for peak exceeds overlap limit
+              if (
+                (isPrevMaxPeak !== isCurrMaxPeak &&
+                  getXAxisDistanceInPixel(currLength - prevPeak) < 100) ||
+                getXAxisDistanceInPixel(currPeak - prevLength) < 100
+              ) {
+                //check priority
+                if (currPriority > prevPriority) {
+                  //if prev data has lower priority then remove it from all data && push new data
+                  allData[allData.length - 1][0].indexLabelFontColor =
+                    "transparent";
+                } else {
+                  currlengthPeak[0].indexLabelFontColor = "transparent";
+                }
+              }
+
               allData.push(currlengthPeak);
             };
 
@@ -1129,10 +1186,57 @@ async (dataString) => {
             type: "scatter",
             highlightEnabled: false,
             fillOpacity: 0,
+            indexLabelPlacement: "outside",
             dataPoints: scatterChartPoints,
           };
         };
-        const peakAndLengthDataPoints = getPeakMeanAndLength(areaChartData);
+        const getSignalUnitData = (limitName) => {
+          let convertSignalFromDB;
+          let signalDecimals;
+          switch (limitName) {
+            case "VerticalAlignment":
+            case "HorizontalAlignment":
+              convertSignalFromDB =
+                UnitConfigurations?.Deviation?.DbUnitConversionValue;
+              signalDecimals = UnitConfigurations?.Deviation?.ReportDecimals;
+              break;
+            case "Twist":
+              convertSignalFromDB =
+                UnitConfigurations?.Twist?.DbUnitConversionValue;
+              signalDecimals = UnitConfigurations?.Twist?.ReportDecimals;
+              break;
+            case "Cant":
+              convertSignalFromDB =
+                UnitConfigurations?.Cant?.DbUnitConversionValue;
+              signalDecimals = UnitConfigurations?.Cant?.ReportDecimals;
+              break;
+            case "Gauge":
+              convertSignalFromDB =
+                UnitConfigurations?.Gauge?.DbUnitConversionValue;
+              signalDecimals = UnitConfigurations?.Gauge?.ReportDecimals;
+              break;
+            default:
+              convertSignalFromDB = 1;
+              signalDecimals = 1;
+          }
+          return {
+            convertSignalFromDB,
+            signalDecimals,
+          };
+        };
+        const signalUnitData = getSignalUnitData(param.limitName);
+        const unitData = {
+          localizationDecimals:
+            UnitConfigurations?.Localization?.ReportDecimals ?? 1,
+          convertLocalizationFromDB:
+            UnitConfigurations?.Localization?.DbUnitConversionValue,
+          convertSignalFromDB: signalUnitData.convertSignalFromDB,
+          signalDecimals: signalUnitData.signalDecimals ?? 1,
+        };
+        const peakAndLengthDataPoints = getPeakMeanAndLength(
+          areaChartData,
+          unitData
+        );
 
         chartList.push({
           height: height,
