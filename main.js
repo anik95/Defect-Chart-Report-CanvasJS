@@ -147,7 +147,7 @@ async (dataString) => {
       limitName: "Twist",
       limitType: "",
       baseLengthUnit: HeaderTableUnitAttributes["BaseLength"],
-      columnName: `${ChartTableAttributes.Twist} ${TwistBaseLength.ReportValue} ${HeaderTableUnitAttributes["BaseLength"]}`,
+      columnName: `${ChartTableAttributes.Twist} ${TwistBaseLength.FormattedReportValue} ${HeaderTableUnitAttributes["BaseLength"]}`,
       unit: HeaderTableUnitAttributes["Twist"],
     },
     {
