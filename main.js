@@ -1042,7 +1042,9 @@ async (dataString) => {
           const {
             localizationDecimals,
             convertLocalizationFromDB,
+            convertLocalDistanceFromDB,
             convertSignalFromDB,
+            localDistanceDecimals,
             signalDecimals,
           } = unitData;
           const allData = [];
@@ -1071,8 +1073,8 @@ async (dataString) => {
               y: isMaxPeak ? -0.003 : 0.003,
               indexLabel: convertedLocalizationValue(
                 diff,
-                convertLocalizationFromDB
-              ).toFixed(localizationDecimals ?? 1),
+                convertLocalDistanceFromDB
+              ).toFixed(localDistanceDecimals ?? 1),
               indexLabelOrientation: "horizontal",
               indexLabelFontSize: 6,
               indexLabelFontWeight: "bolder",
@@ -1231,6 +1233,10 @@ async (dataString) => {
           convertLocalizationFromDB:
             UnitConfigurations?.Localization?.DbUnitConversionValue,
           convertSignalFromDB: signalUnitData.convertSignalFromDB,
+          convertLocalDistanceFromDB:
+            UnitConfigurations?.Distance?.DbUnitConversionValue,
+          localDistanceDecimals:
+            UnitConfigurations?.Distance?.ReportDecimals ?? 1,
           signalDecimals: signalUnitData.signalDecimals ?? 1,
         };
         const peakAndLengthDataPoints = getPeakMeanAndLength(
