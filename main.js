@@ -967,8 +967,8 @@ async (dataString) => {
         thresholdDataSet = generateThresholdStriplines(limits);
         labelStripLines = generateLabelStripLines(chartList.length, speedZones);
         let height = (Math.abs(maxY - minY) / DefectScale) * mToPixel + 13;
-        if (height < 20 || height === Infinity) {
-          height = 20;
+        if (height < 40 || height === Infinity) {
+          height = 40;
         }
         if (chartList.length === 7) {
           height = 133;
