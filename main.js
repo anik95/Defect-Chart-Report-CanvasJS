@@ -1051,6 +1051,7 @@ async (dataString) => {
           let minPixelsForLengthOverlap = getMinPixelsForLengthOverlap(
             unitData?.localizationDecimals ?? 8
           );
+
           areaChartData.forEach((areaData, index) => {
             if (areaData.dataPoints.length <= 1 || areaData.severityFlag === "")
               return;
@@ -1084,6 +1085,9 @@ async (dataString) => {
             lengthAndPeakData.push(currentLengthData);
 
             areaData.dataPoints.forEach((point) => {
+              if (point.y == null) {
+                return;
+              }
               if (isMaxPeak) {
                 if (maxY < point.y) {
                   maxY = point.y;
@@ -1125,10 +1129,6 @@ async (dataString) => {
               const currPriority = currlengthPeak[0].priority;
               const isCurrMaxPeak = currlengthPeak[1].y < 0;
               const insertData = [];
-              const isPrevLengthTransparent =
-                allData[allData.length - 1][0].indexLabelFontColor;
-              const isPrevPeakTransparent =
-                allData[allData.length - 1][1].indexLabelFontColor;
               //check if two x coordinates for length have distance less than 30 i.e overlaps
               if (
                 isPrevMaxPeak === isCurrMaxPeak &&
@@ -1140,7 +1140,7 @@ async (dataString) => {
                   //if prev data has lower priority then remove it from all data && push new data
                   allData[allData.length - 1][0].indexLabelFontColor =
                     "transparent";
-                } else if (!isPrevLengthTransparent) {
+                } else {
                   currlengthPeak[0].indexLabelFontColor = "transparent";
                 }
               }
@@ -1154,24 +1154,8 @@ async (dataString) => {
                   //if prev data has lower priority then remove it from all data && push new data
                   allData[allData.length - 1][1].indexLabelFontColor =
                     "transparent";
-                } else if (!isPrevPeakTransparent) {
+                } else {
                   currlengthPeak[1].indexLabelFontColor = "transparent";
-                }
-              }
-              //check if x coordinates for length overlaps with x coordinate for peak exceeds overlap limit
-              if (
-                (isPrevMaxPeak !== isCurrMaxPeak &&
-                  getXAxisDistanceInPixel(currLength - prevPeak) <
-                    minPixelsForLengthOverlap) ||
-                getXAxisDistanceInPixel(currPeak - prevLength) < 10
-              ) {
-                //check priority
-                if (currPriority > prevPriority) {
-                  //if prev data has lower priority then remove it from all data && push new data
-                  allData[allData.length - 1][0].indexLabelFontColor =
-                    "transparent";
-                } else if (!isPrevLengthTransparent) {
-                  currlengthPeak[0].indexLabelFontColor = "transparent";
                 }
               }
 
@@ -1248,6 +1232,7 @@ async (dataString) => {
           areaChartData,
           unitData
         );
+
         chartList.push({
           height: height,
           backgroundColor:
