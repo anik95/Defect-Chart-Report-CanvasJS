@@ -17,6 +17,7 @@ async (dataString) => {
     LocalizedAttributes,
     HeaderTableUnitAttributes,
     UnitConfigurations,
+    PauseRecords,
   } = parsedData;
   const widthRatio = LocalizationScale / 100;
   const mToPixel = 3.78 * 1000;
@@ -494,6 +495,40 @@ async (dataString) => {
           labelMaxWidth: 95,
         });
       }
+    });
+    PauseRecords.forEach((pauseRecord) => {
+      eventStripLines.push({
+        value: pauseRecord.StationingStart.OriginalValue,
+        labelPlacement: "outside",
+        lineDashType: "longDash",
+        labelBackgroundColor: "transparent",
+        color: "#000",
+        label: `${pauseRecord.StationingStart.FormattedReportValue}, PAU \u25BC`,
+        showOnTop: true,
+        labelFontColor: "#000",
+        labelFontFamily: "Calibri",
+        labelWrap: true,
+        labelAlign: "near",
+        labelAngle: 270,
+        labelFontSize: 10,
+        labelMaxWidth: 95,
+      });
+      eventStripLines.push({
+        value: pauseRecord.StationingEnd.OriginalValue,
+        labelPlacement: "outside",
+        lineDashType: "longDash",
+        color: "#000",
+        labelBackgroundColor: "transparent",
+        label: `${pauseRecord.StationingEnd.FormattedReportValue}, RES \u25B2`,
+        showOnTop: true,
+        labelFontColor: "#000",
+        labelFontFamily: "Calibri",
+        labelWrap: true,
+        labelAlign: "near",
+        labelAngle: 270,
+        labelFontSize: 10,
+        labelMaxWidth: 95,
+      });
     });
     return eventStripLines;
   };
@@ -1158,6 +1193,22 @@ async (dataString) => {
                   currlengthPeak[1].indexLabelFontColor = "transparent";
                 }
               }
+              //check if x coordinates for length overlaps with x coordinate for peak exceeds overlap limit
+              // if (
+              //   (isPrevMaxPeak !== isCurrMaxPeak &&
+              //     getXAxisDistanceInPixel(currLength - prevPeak) <
+              //       minPixelsForLengthOverlap) ||
+              //   getXAxisDistanceInPixel(currPeak - prevLength) < 10
+              // ) {
+              //   //check priority
+              //   if (currPriority > prevPriority) {
+              //     //if prev data has lower priority then remove it from all data && push new data
+              //     allData[allData.length - 1][0].indexLabelFontColor =
+              //       "transparent";
+              //   } else {
+              //     currlengthPeak[0].indexLabelFontColor = "transparent";
+              //   }
+              // }
 
               allData.push(currlengthPeak);
             };
